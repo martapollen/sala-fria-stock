@@ -53,7 +53,6 @@
     --cta-bg:#171717;
     --cta-bg-hover:#2c2c2c;
     --cta-text:#faf9f7;
-    --header-scrim: linear-gradient(100deg, rgba(15,16,15,.88) 0%, rgba(140,31,53,.32) 42%, rgba(15,16,15,.55) 100%);
     --shadow: 0 1px 2px rgba(15,16,15,.07), 0 8px 20px rgba(15,16,15,.07);
   }
   @media (prefers-color-scheme: dark){
@@ -78,7 +77,6 @@
       --cta-bg:#faf9f7;
       --cta-bg-hover:#e2e0dc;
       --cta-text:#0f100f;
-      --header-scrim: linear-gradient(100deg, rgba(15,16,15,.92) 0%, rgba(140,31,53,.28) 42%, rgba(15,16,15,.65) 100%);
       --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 24px rgba(0,0,0,.4);
     }
   }
@@ -103,7 +101,6 @@
     --cta-bg:#faf9f7;
     --cta-bg-hover:#e2e0dc;
     --cta-text:#0f100f;
-    --header-scrim: linear-gradient(110deg, rgba(15,16,15,.90) 0%, rgba(140,31,53,.32) 48%, rgba(15,16,15,.92) 100%);
     --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 24px rgba(0,0,0,.4);
   }
 
@@ -135,19 +132,9 @@
     gap:16px;
     flex-wrap:wrap;
     margin-bottom:24px;
-    padding:22px 24px;
-    border-radius:14px;
-    border-bottom:none;
-    color:#faf9f7;
-    background:
-      var(--header-scrim),
-      url("./assets/img/pollen-pattern-005.jpg") 48% 22%/cover no-repeat;
-    box-shadow:var(--shadow);
+    padding-bottom:18px;
+    border-bottom:1px solid var(--border);
   }
-  header.top h1{ color:#faf9f7; }
-  header.top .brand .mark{ color:#f8dfe5; }
-  header.top .stat .n{ color:#faf9f7; }
-  header.top .stat .l{ color:rgba(250,249,247,.72); }
   .brand{
     display:flex;
     align-items:baseline;
