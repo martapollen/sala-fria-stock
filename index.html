@@ -120,7 +120,7 @@
   .num{ font-variant-numeric: tabular-nums; }
 
   .wrap{
-    max-width:1180px;
+    max-width:1440px;
     margin:0 auto;
     padding:28px 20px 60px;
   }
@@ -191,11 +191,11 @@
 
   .grid{
     display:grid;
-    grid-template-columns: minmax(380px, 520px) 1fr;
+    grid-template-columns: minmax(660px, 720px) 1fr;
     gap:20px;
     align-items:start;
   }
-  @media (max-width: 860px){
+  @media (max-width: 1100px){
     .grid{ grid-template-columns: 1fr; }
   }
 
@@ -265,7 +265,7 @@
   }
   table.item-table{
     width:100%;
-    min-width:500px;
+    min-width:600px;
     border-collapse:collapse;
     font-size:12px;
   }
@@ -291,7 +291,7 @@
   table.item-table tbody tr.selected{ background:var(--accent-soft); }
   table.item-table td{ padding:7px 8px; vertical-align:top; color:var(--text); }
   td.col-produto{ white-space:nowrap; color:var(--text-muted); font-size:10.5px; }
-  td.col-categoria{ font-size:10.5px; color:var(--text-muted); max-width:112px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  td.col-categoria{ font-size:10.5px; color:var(--text-muted); max-width:170px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   td.col-ref{ font-family:"IBM Plex Mono", monospace; font-size:10px; color:var(--text-muted); white-space:nowrap; }
   td.col-nome{ font-weight:500; }
   td.col-stock{
@@ -745,7 +745,7 @@ function renderList(){
 
   list.innerHTML = `<table class="item-table">
     <colgroup>
-      <col style="width:64px"><col style="width:104px"><col style="width:140px"><col><col style="width:72px">
+      <col style="width:70px"><col style="width:170px"><col style="width:140px"><col><col style="width:80px">
     </colgroup>
     <thead>
       <tr>
