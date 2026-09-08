@@ -1,0 +1,938 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Movimentos Sala Fria</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ctext y='13' font-size='14'%3E%E2%9D%84%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  @font-face{
+    font-family:"Avantt";
+    font-weight:400;
+    font-style:normal;
+    src:url("./assets/fonts/Avantt-Regular.otf") format("opentype");
+  }
+  @font-face{
+    font-family:"Avantt";
+    font-weight:400;
+    font-style:italic;
+    src:url("./assets/fonts/Avantt-RegularItalic.otf") format("opentype");
+  }
+  @font-face{
+    font-family:"Avantt";
+    font-weight:600;
+    font-style:normal;
+    src:url("./assets/fonts/Avantt-SemiBold.otf") format("opentype");
+  }
+  @font-face{
+    font-family:"Avantt";
+    font-weight:600;
+    font-style:italic;
+    src:url("./assets/fonts/Avantt-SemiBoldItalic.otf") format("opentype");
+  }
+
+  :root{
+    --bg:#faf9f7;
+    --surface:#ffffff;
+    --surface-2:#f3f1ee;
+    --border:#eaeaea;
+    --border-strong:#b4b4b4;
+    --text:#0f100f;
+    --text-muted:#6d6d6b;
+    --accent:#c8395a;
+    --accent-hover:#a72f4c;
+    --accent-soft:#f8dfe5;
+    --good:#0f4b1b;
+    --good-soft:#e3efe2;
+    --bad:#8c1f35;
+    --bad-soft:#f5e6e9;
+    --warn:#8c1f35;
+    --warn-soft:#f5e6e9;
+    --focus:#c8395a;
+    --header-scrim: linear-gradient(100deg, rgba(15,16,15,.85) 0%, rgba(140,31,53,.5) 42%, rgba(15,16,15,.42) 100%);
+    --shadow: 0 1px 2px rgba(15,16,15,.07), 0 8px 20px rgba(15,16,15,.07);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0f100f;
+      --surface:#19191a;
+      --surface-2:#212221;
+      --border:#2c2c2b;
+      --border-strong:#484846;
+      --text:#faf9f7;
+      --text-muted:#b4b4b4;
+      --accent:#e0577c;
+      --accent-hover:#c8395a;
+      --accent-soft:#331a20;
+      --good:#4f9c52;
+      --good-soft:#132615;
+      --bad:#c9536c;
+      --bad-soft:#2d161a;
+      --warn:#c9536c;
+      --warn-soft:#2d161a;
+      --focus:#f2bdca;
+      --header-scrim: linear-gradient(100deg, rgba(15,16,15,.90) 0%, rgba(140,31,53,.45) 42%, rgba(15,16,15,.55) 100%);
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 24px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0f100f;
+    --surface:#19191a;
+    --surface-2:#212221;
+    --border:#2c2c2b;
+    --border-strong:#484846;
+    --text:#faf9f7;
+    --text-muted:#b4b4b4;
+    --accent:#e0577c;
+    --accent-hover:#c8395a;
+    --accent-soft:#331a20;
+    --good:#4f9c52;
+    --good-soft:#132615;
+    --bad:#c9536c;
+    --bad-soft:#2d161a;
+    --warn:#c9536c;
+    --warn-soft:#2d161a;
+    --focus:#f2bdca;
+    --header-scrim: linear-gradient(110deg, rgba(15,16,15,.86) 0%, rgba(140,31,53,.55) 48%, rgba(15,16,15,.90) 100%);
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 24px rgba(0,0,0,.4);
+  }
+
+  *{ box-sizing:border-box; }
+  html, body{ margin:0; }
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:"Avantt", system-ui, sans-serif;
+    font-size:14px;
+    line-height:1.45;
+  }
+  ::selection{ background:var(--accent-soft); }
+  a{ color:var(--accent); }
+
+  .mono{ font-family:"IBM Plex Mono", ui-monospace, monospace; }
+  .num{ font-variant-numeric: tabular-nums; }
+
+  .wrap{
+    max-width:1180px;
+    margin:0 auto;
+    padding:28px 20px 60px;
+  }
+
+  header.top{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:16px;
+    flex-wrap:wrap;
+    margin-bottom:24px;
+    padding:22px 24px;
+    border-radius:14px;
+    border-bottom:none;
+    color:#faf9f7;
+    background:
+      var(--header-scrim),
+      url("./assets/img/pollen-pattern-005.jpg") 48% 22%/cover no-repeat;
+    box-shadow:var(--shadow);
+  }
+  header.top h1{ color:#faf9f7; }
+  header.top .brand .mark{ color:#f8dfe5; background:rgba(15,16,15,.4); }
+  header.top .stat .n{ color:#faf9f7; }
+  header.top .stat .l{ color:rgba(250,249,247,.72); }
+  .brand{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+  }
+  .brand .mark{
+    font-family:"Avantt", system-ui, sans-serif;
+    font-weight:600;
+    font-size:13px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--accent);
+    background:var(--accent-soft);
+    padding:3px 8px;
+    border-radius:4px;
+  }
+  h1{
+    font-family:"Avantt", system-ui, sans-serif;
+    font-weight:600;
+    font-size:30px;
+    letter-spacing:.01em;
+    margin:0;
+    text-wrap:balance;
+  }
+  .stats{
+    display:flex;
+    gap:22px;
+    flex-wrap:wrap;
+  }
+  .stat{ text-align:right; }
+  .stat .n{
+    font-family:"Avantt", system-ui, sans-serif;
+    font-weight:600;
+    font-size:22px;
+    display:block;
+    line-height:1.1;
+  }
+  .stat .l{
+    font-size:11px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--text-muted);
+  }
+
+  #status-banner{
+    display:none;
+    align-items:center;
+    gap:10px;
+    background:var(--warn-soft);
+    color:var(--warn);
+    border:1px solid var(--warn);
+    border-radius:8px;
+    padding:10px 14px;
+    font-size:13px;
+    margin-bottom:18px;
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns: minmax(380px, 520px) 1fr;
+    gap:20px;
+    align-items:start;
+  }
+  @media (max-width: 860px){
+    .grid{ grid-template-columns: 1fr; }
+  }
+
+  .panel{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:12px;
+    box-shadow:var(--shadow);
+    overflow:hidden;
+  }
+  .panel-head{
+    padding:14px 16px 12px;
+    border-bottom:1px solid var(--border);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+  }
+  .panel-head h2{
+    font-family:"Avantt", system-ui, sans-serif;
+    font-weight:600;
+    font-size:16px;
+    letter-spacing:.03em;
+    text-transform:uppercase;
+    margin:0;
+    color:var(--text-muted);
+  }
+  .panel-body{ padding:14px 16px 16px; }
+
+  input[type="text"], input[type="number"]{
+    width:100%;
+    background:var(--surface-2);
+    border:1px solid var(--border-strong);
+    border-radius:8px;
+    padding:9px 11px;
+    color:var(--text);
+    font-family:inherit;
+    font-size:14px;
+  }
+  input:focus{
+    outline:2px solid var(--focus);
+    outline-offset:1px;
+  }
+  label{
+    display:block;
+    font-size:11px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--text-muted);
+    margin-bottom:5px;
+  }
+  .field{ margin-bottom:12px; }
+
+  .search-box{ position:relative; margin-bottom:10px; }
+  .search-box svg{
+    position:absolute; left:11px; top:50%; transform:translateY(-50%);
+    width:15px; height:15px; color:var(--text-muted); pointer-events:none;
+  }
+  .search-box input{ padding-left:33px; }
+
+  .item-list{
+    max-height:520px;
+    overflow:auto;
+    border:1px solid var(--border);
+    border-radius:8px;
+  }
+  table.item-table{
+    width:100%;
+    min-width:440px;
+    border-collapse:collapse;
+    font-size:12px;
+  }
+  table.item-table thead th{
+    position:sticky;
+    top:0;
+    z-index:1;
+    background:var(--surface-2);
+    text-align:left;
+    font-size:9.5px;
+    letter-spacing:.07em;
+    text-transform:uppercase;
+    color:var(--text-muted);
+    font-weight:600;
+    padding:7px 8px;
+    border-bottom:1px solid var(--border);
+    white-space:nowrap;
+  }
+  table.item-table th.col-stock{ text-align:right; }
+  table.item-table tbody tr{ cursor:pointer; border-bottom:1px solid var(--border); }
+  table.item-table tbody tr:last-child{ border-bottom:none; }
+  table.item-table tbody tr:hover{ background:var(--surface-2); }
+  table.item-table tbody tr.selected{ background:var(--accent-soft); }
+  table.item-table td{ padding:7px 8px; vertical-align:top; color:var(--text); }
+  td.col-produto{ white-space:nowrap; color:var(--text-muted); font-size:10.5px; }
+  td.col-categoria{ font-size:10.5px; color:var(--text-muted); max-width:112px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  td.col-ref{ font-family:"IBM Plex Mono", monospace; font-size:10px; color:var(--text-muted); max-width:82px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  td.col-nome{ font-weight:500; }
+  td.col-stock{
+    font-family:"IBM Plex Mono", monospace;
+    font-weight:500;
+    font-variant-numeric: tabular-nums;
+    text-align:right;
+    white-space:nowrap;
+  }
+  td.col-stock.zero{ color:var(--bad); }
+  td.col-stock.unknown{ color:var(--warn); font-style:italic; }
+  .empty-hint{
+    color:var(--text-muted);
+    font-size:13px;
+    padding:20px 6px;
+    text-align:center;
+  }
+
+  .field-grid{
+    display:flex;
+    flex-wrap:wrap;
+    gap:4px 24px;
+    margin-top:2px;
+  }
+  .field-grid .field-block{
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+  }
+  .field-grid .fk{
+    font-size:9.5px;
+    letter-spacing:.07em;
+    text-transform:uppercase;
+    color:var(--text-muted);
+  }
+  .field-grid .fv{ font-size:12.5px; }
+  .field-grid .fv.mono{ font-family:"IBM Plex Mono", monospace; font-size:12px; }
+
+  .selected-card{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+    padding:14px 16px;
+    background:var(--accent-soft);
+    border-bottom:1px solid var(--border);
+  }
+  .selected-card .title{
+    font-family:"Avantt", system-ui, sans-serif;
+    font-weight:600;
+    font-size:20px;
+  }
+  .selected-card .stock{
+    display:flex;
+    align-items:baseline;
+    gap:6px;
+    margin-top:6px;
+  }
+  .selected-card .stock .n{
+    font-family:"IBM Plex Mono", monospace;
+    font-weight:500;
+    font-size:26px;
+  }
+  .selected-card .stock .n.zero{ color:var(--bad); }
+  .selected-card .stock .n.unknown{ color:var(--warn); font-style:italic; font-size:20px; }
+  .selected-card .stock .u{
+    font-size:11px;
+    color:var(--text-muted);
+    text-transform:uppercase;
+    letter-spacing:.06em;
+  }
+  .selected-card .stock-note{
+    font-size:11.5px;
+    color:var(--warn);
+    margin-top:2px;
+  }
+
+  .no-selection{
+    padding:40px 20px;
+    text-align:center;
+    color:var(--text-muted);
+  }
+
+  .dir-toggle{
+    display:flex;
+    gap:8px;
+    margin-bottom:12px;
+  }
+  .dir-btn{
+    flex:1;
+    padding:10px;
+    border-radius:8px;
+    border:1px solid var(--border-strong);
+    background:var(--surface-2);
+    color:var(--text);
+    font-family:"Avantt", system-ui, sans-serif;
+    font-weight:600;
+    font-size:15px;
+    letter-spacing:.03em;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+  }
+  .dir-btn.active.in{ background:var(--good-soft); border-color:var(--good); color:var(--good); }
+  .dir-btn.active.out{ background:var(--bad-soft); border-color:var(--bad); color:var(--bad); }
+
+  .form-row{ display:flex; gap:10px; }
+  .form-row .field{ flex:1; }
+
+  button.primary{
+    width:100%;
+    padding:11px;
+    border-radius:8px;
+    border:none;
+    background:var(--accent);
+    color:#fff;
+    font-family:"Avantt", system-ui, sans-serif;
+    font-weight:600;
+    font-size:15px;
+    letter-spacing:.03em;
+    cursor:pointer;
+    margin-top:2px;
+  }
+  button.primary:hover{ background:var(--accent-hover); }
+  button.primary:disabled{
+    background:var(--border-strong);
+    color:var(--text-muted);
+    cursor:not-allowed;
+  }
+
+  .result-preview{
+    margin-top:10px;
+    font-size:12.5px;
+    color:var(--text-muted);
+    min-height:18px;
+  }
+  .result-preview.warn{ color:var(--warn); }
+  .result-preview.ok{ color:var(--good); }
+
+  .divider{ border-top:1px solid var(--border); margin:18px 0; }
+
+  table{ width:100%; border-collapse:collapse; font-size:13px; }
+  th{
+    text-align:left;
+    font-size:11px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--text-muted);
+    font-weight:600;
+    padding:0 10px 8px;
+    border-bottom:1px solid var(--border);
+  }
+  td{
+    padding:9px 10px;
+    border-bottom:1px solid var(--border);
+    vertical-align:top;
+  }
+  tr:last-child td{ border-bottom:none; }
+  .table-scroll{ overflow-x:auto; }
+  .delta{
+    font-family:"IBM Plex Mono", monospace;
+    font-weight:500;
+  }
+  .delta.in{ color:var(--good); }
+  .delta.out{ color:var(--bad); }
+  .person{ font-weight:500; }
+  .ts{ color:var(--text-muted); white-space:nowrap; }
+  .comp-cell .n{ font-weight:500; }
+  .comp-cell .c{ font-size:11px; color:var(--text-muted); }
+
+  .history-filter{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:12px;
+    color:var(--text-muted);
+  }
+  .history-filter button{
+    background:none; border:1px solid var(--border-strong); color:var(--text-muted);
+    padding:4px 9px; border-radius:6px; font-size:12px; cursor:pointer; font-family:inherit;
+  }
+  .history-filter button:hover{ color:var(--text); }
+
+  .footer-note{
+    margin-top:22px;
+    font-size:12px;
+    color:var(--text-muted);
+    text-align:center;
+  }
+
+  ::-webkit-scrollbar{ width:9px; height:9px; }
+  ::-webkit-scrollbar-thumb{ background:var(--border-strong); border-radius:6px; }
+  ::-webkit-scrollbar-track{ background:transparent; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="brand">
+        <span class="mark">Sala Fria</span>
+      </div>
+      <h1>Registo de Movimentos de Stock</h1>
+    </div>
+    <div class="stats">
+      <div class="stat"><span class="n num" id="stat-items">–</span><span class="l">Componentes</span></div>
+      <div class="stat"><span class="n num" id="stat-moves">–</span><span class="l">Movimentos hoje</span></div>
+      <div class="stat"><span class="n num" id="stat-low">–</span><span class="l">Stock a zero</span></div>
+    </div>
+  </header>
+
+  <div id="status-banner"></div>
+
+  <div class="grid">
+    <!-- LEFT: search + inventory -->
+    <div class="panel">
+      <div class="panel-head"><h2>Componentes</h2></div>
+      <div class="panel-body">
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+          <input type="text" id="search" placeholder="Pesquisar por nome, categoria ou referência…" autocomplete="off">
+        </div>
+        <div class="item-list" id="item-list"></div>
+      </div>
+    </div>
+
+    <!-- RIGHT: selected item + form + history -->
+    <div style="display:flex; flex-direction:column; gap:20px;">
+      <div class="panel">
+        <div id="selected-area">
+          <div class="no-selection">Escolhe um componente na lista à esquerda para registar um movimento.</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Histórico de movimentos</h2>
+          <div class="history-filter" id="history-filter" style="display:none;">
+            <span>Filtrado por componente selecionado</span>
+            <button id="clear-filter">Ver todos</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="table-scroll">
+            <table id="history-table">
+              <thead>
+                <tr>
+                  <th>Data / Hora</th>
+                  <th>Pessoa</th>
+                  <th>Componente</th>
+                  <th style="text-align:right;">Qtd.</th>
+                </tr>
+              </thead>
+              <tbody id="history-body"></tbody>
+            </table>
+          </div>
+          <div class="empty-hint" id="history-empty" style="display:none;">Ainda não há movimentos registados.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-note" id="footer-note">A carregar inventário…</div>
+</div>
+
+<datalist id="known-names"></datalist>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="./config.js"></script>
+<script>
+const norm = s => (s || '').toString()
+  .normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
+  .toLowerCase().trim();
+
+const catOrder = cat => {
+  const m = /^(\d+(?:\.\d+)?)/.exec(cat || '');
+  return m ? parseFloat(m[1]) : 999;
+};
+
+const fmtQty = (n, unit) => {
+  if (n === null || n === undefined) return 'por confirmar';
+  const r = Math.round(n * 100) / 100;
+  const s = (Number.isInteger(r) ? r : r.toFixed(2)).toString();
+  return unit ? `${s} ${unit}` : s;
+};
+
+const stockClass = stock => stock === null ? 'unknown' : (stock <= 0 ? 'zero' : '');
+
+const stockCellText = (it, stock) => {
+  if (stock === null) return '—';
+  const s = fmtQty(stock, it.unit);
+  return it.qty_approx ? `~${s}` : s;
+};
+
+const fmtTs = iso => {
+  try {
+    const d = new Date(iso);
+    return d.toLocaleDateString('pt-PT', { day:'2-digit', month:'2-digit', year:'2-digit' }) + ' · ' +
+           d.toLocaleTimeString('pt-PT', { hour:'2-digit', minute:'2-digit' });
+  } catch(e) { return iso; }
+};
+
+function escapeHtml(s){
+  return (s || '').toString().replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+let items = new Map();          // id -> {id, nome, categoria, ref, produto, qty, unit, qty_approx, qty_note}
+let movements = [];             // newest first
+let selectedId = null;
+let direction = 'out';          // default: registar saída (uso mais comum)
+let dbReady = false;
+let sb = null;
+
+function computeStock(id){
+  const base = items.get(id);
+  if (!base) return 0;
+  if (base.qty === null || base.qty === undefined) return null;
+  let delta = 0;
+  for (const m of movements) if (m.item_id === id) delta += Number(m.delta);
+  return base.qty + delta;
+}
+
+function matches(it, q){
+  if (!q) return true;
+  const hay = norm([it.nome, it.categoria, it.ref, it.produto].join(' '));
+  return hay.includes(q);
+}
+
+function renderStats(){
+  document.getElementById('stat-items').textContent = items.size;
+  const todayStr = new Date().toDateString();
+  const todayCount = movements.filter(m => new Date(m.created_at).toDateString() === todayStr).length;
+  document.getElementById('stat-moves').textContent = todayCount;
+  let low = 0;
+  items.forEach((it, id) => { const s = computeStock(id); if (s !== null && s <= 0) low++; });
+  document.getElementById('stat-low').textContent = low;
+}
+
+function renderList(){
+  const q = norm(document.getElementById('search').value);
+  const list = document.getElementById('item-list');
+  const arr = Array.from(items.values())
+    .filter(it => matches(it, q))
+    .sort((a,b) => catOrder(a.categoria) - catOrder(b.categoria) || a.nome.localeCompare(b.nome));
+
+  if (arr.length === 0){
+    list.innerHTML = '<div class="empty-hint">Nenhum componente encontrado.</div>';
+    return;
+  }
+
+  const rows = arr.map(it => {
+    const stock = computeStock(it.id);
+    const produto = it.produto || '—';
+    const categoria = it.categoria || '—';
+    const ref = it.ref != null && it.ref !== '' ? it.ref : '—';
+    return `<tr class="${it.id === selectedId ? 'selected' : ''}" data-id="${it.id}">
+      <td class="col-produto" title="${escapeHtml(produto)}">${escapeHtml(produto)}</td>
+      <td class="col-categoria" title="${escapeHtml(categoria)}">${escapeHtml(categoria)}</td>
+      <td class="col-ref" title="${escapeHtml(ref)}">${escapeHtml(ref)}</td>
+      <td class="col-nome" title="${escapeHtml(it.nome)}">${escapeHtml(it.nome)}</td>
+      <td class="col-stock num ${stockClass(stock)}" title="${escapeHtml(it.qty_note || '')}">${stockCellText(it, stock)}</td>
+    </tr>`;
+  }).join('');
+
+  list.innerHTML = `<table class="item-table">
+    <colgroup>
+      <col style="width:64px"><col style="width:104px"><col style="width:76px"><col><col style="width:72px">
+    </colgroup>
+    <thead>
+      <tr>
+        <th>Produto</th>
+        <th>Categoria</th>
+        <th>REF</th>
+        <th>Componente</th>
+        <th class="col-stock">Stock</th>
+      </tr>
+    </thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+
+  list.querySelectorAll('tbody tr').forEach(row => {
+    row.addEventListener('click', () => selectItem(row.dataset.id));
+  });
+}
+
+function selectItem(id){
+  selectedId = id;
+  renderList();
+  renderSelected();
+  renderHistoryFilterUI();
+  renderHistory();
+}
+
+function renderSelected(){
+  const area = document.getElementById('selected-area');
+  const it = items.get(selectedId);
+  if (!it){
+    area.innerHTML = '<div class="no-selection">Escolhe um componente na lista à esquerda para registar um movimento.</div>';
+    return;
+  }
+  const stock = computeStock(it.id);
+  area.innerHTML = `
+    <div class="selected-card">
+      <div class="title">${escapeHtml(it.nome)}</div>
+      <div class="field-grid">
+        <div class="field-block"><span class="fk">Produto</span><span class="fv">${escapeHtml(it.produto || '—')}</span></div>
+        <div class="field-block"><span class="fk">Categoria</span><span class="fv">${escapeHtml(it.categoria || '—')}</span></div>
+        <div class="field-block"><span class="fk">REF</span><span class="fv mono">${escapeHtml(it.ref || '—')}</span></div>
+      </div>
+      <div class="stock">
+        <span class="n num ${stockClass(stock)}">${stockCellText(it, stock)}</span>
+        <span class="u">${stock === null ? '' : 'em stock agora'}</span>
+      </div>
+      ${it.qty_note ? `<div class="stock-note">${escapeHtml(it.qty_note)}</div>` : ''}
+    </div>
+    <div class="panel-body">
+      <div class="dir-toggle">
+        <button type="button" class="dir-btn ${direction==='in' ? 'active in' : ''}" id="btn-in">↑ Entrada</button>
+        <button type="button" class="dir-btn ${direction==='out' ? 'active out' : ''}" id="btn-out">↓ Saída</button>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label for="f-person">Quem movimentou</label>
+          <input type="text" id="f-person" list="known-names" placeholder="Nome" autocomplete="off">
+        </div>
+        <div class="field" style="max-width:130px;">
+          <label for="f-qty">Quantidade</label>
+          <input type="number" id="f-qty" min="0" step="any" placeholder="0" inputmode="decimal">
+        </div>
+      </div>
+      <button class="primary" id="btn-submit" disabled>Registar movimento</button>
+      <div class="result-preview" id="result-preview"></div>
+    </div>
+  `;
+
+  document.getElementById('btn-in').addEventListener('click', () => { direction = 'in'; renderSelected(); });
+  document.getElementById('btn-out').addEventListener('click', () => { direction = 'out'; renderSelected(); });
+
+  const personEl = document.getElementById('f-person');
+  const qtyEl = document.getElementById('f-qty');
+  const submitBtn = document.getElementById('btn-submit');
+  const preview = document.getElementById('result-preview');
+
+  const lastPerson = localStorage.getItem('salafria_last_person');
+  if (lastPerson) personEl.value = lastPerson;
+
+  function updatePreview(){
+    const qty = parseFloat(qtyEl.value);
+    const person = personEl.value.trim();
+    submitBtn.disabled = !(person && qty > 0 && dbReady);
+    if (!qty || qty <= 0){
+      preview.textContent = '';
+      preview.className = 'result-preview';
+      return;
+    }
+    const delta = direction === 'in' ? qty : -qty;
+    if (stock === null){
+      preview.textContent = 'Stock inicial por confirmar — o movimento fica registado, mas o total ainda não é exato.';
+      preview.className = 'result-preview warn';
+      return;
+    }
+    const result = stock + delta;
+    if (result < 0){
+      preview.textContent = `Atenção: ficaria com stock negativo (${fmtQty(result, it.unit)}).`;
+      preview.className = 'result-preview warn';
+    } else {
+      preview.textContent = `Novo stock após este movimento: ${fmtQty(result, it.unit)}.`;
+      preview.className = 'result-preview ok';
+    }
+  }
+
+  personEl.addEventListener('input', updatePreview);
+  qtyEl.addEventListener('input', updatePreview);
+  updatePreview();
+
+  submitBtn.addEventListener('click', async () => {
+    const qty = parseFloat(qtyEl.value);
+    const person = personEl.value.trim();
+    if (!(person && qty > 0)) return;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'A registar…';
+    const delta = direction === 'in' ? qty : -qty;
+    const { error } = await sb.from('movements').insert({
+      item_id: it.id,
+      nome: it.nome,
+      categoria: it.categoria,
+      ref: it.ref,
+      produto: it.produto,
+      person,
+      qty,
+      direction,
+      delta,
+    });
+    if (error){
+      submitBtn.textContent = 'Erro — tenta novamente';
+      console.error(error);
+    } else {
+      localStorage.setItem('salafria_last_person', person);
+      qtyEl.value = '';
+      updatePreview();
+      submitBtn.textContent = 'Registado ✓';
+      setTimeout(() => { submitBtn.textContent = 'Registar movimento'; }, 1200);
+    }
+    submitBtn.disabled = !(personEl.value.trim() && parseFloat(qtyEl.value) > 0 && dbReady);
+  });
+}
+
+function renderHistoryFilterUI(){
+  document.getElementById('history-filter').style.display = selectedId ? 'flex' : 'none';
+}
+
+function renderHistory(){
+  const body = document.getElementById('history-body');
+  const empty = document.getElementById('history-empty');
+  let rows = movements;
+  if (selectedId) rows = rows.filter(m => m.item_id === selectedId);
+  rows = rows.slice(0, 80);
+
+  if (rows.length === 0){
+    body.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  body.innerHTML = rows.map(m => {
+    const delta = Number(m.delta);
+    const sign = delta > 0 ? '+' : '';
+    const cls = delta > 0 ? 'in' : 'out';
+    return `<tr>
+      <td class="ts mono">${fmtTs(m.created_at)}</td>
+      <td class="person">${escapeHtml(m.person)}</td>
+      <td class="comp-cell">
+        <div class="n">${escapeHtml(m.nome)}</div>
+        <div class="c mono">${escapeHtml(m.categoria || '')}</div>
+      </td>
+      <td style="text-align:right;" class="delta num ${cls}">${sign}${fmtQty(delta)}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderKnownNames(){
+  const dl = document.getElementById('known-names');
+  const names = Array.from(new Set(movements.map(m => m.person).filter(Boolean)));
+  dl.innerHTML = names.map(n => `<option value="${escapeHtml(n)}">`).join('');
+}
+
+document.getElementById('clear-filter').addEventListener('click', () => {
+  selectedId = null;
+  renderList();
+  renderSelected();
+  renderHistoryFilterUI();
+  renderHistory();
+});
+
+document.getElementById('search').addEventListener('input', renderList);
+
+function showBanner(text, tone){
+  const el = document.getElementById('status-banner');
+  el.textContent = text;
+  el.style.display = 'flex';
+  if (tone === 'error'){
+    el.style.background = 'var(--bad-soft)';
+    el.style.color = 'var(--bad)';
+    el.style.borderColor = 'var(--bad)';
+  }
+}
+
+function renderAll(){
+  renderStats();
+  renderList();
+  renderSelected();
+  renderHistory();
+  renderKnownNames();
+}
+
+async function loadItems(){
+  const { data, error } = await sb.from('items').select('*').limit(1000);
+  if (error){ console.error('items load error', error); return; }
+  const map = new Map();
+  data.forEach(row => map.set(row.id, row));
+  if (map.size > 0) items = map;
+  document.getElementById('footer-note').textContent =
+    `${items.size} componentes carregados · dados partilhados em tempo real.`;
+}
+
+async function loadMovements(){
+  const { data, error } = await sb.from('movements')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(500);
+  if (error){ console.error('movements load error', error); return; }
+  movements = data;
+}
+
+async function init(){
+  renderAll();
+
+  if (!window.supabase || !window.SUPABASE_URL || window.SUPABASE_URL.includes('SUBSTITUI-PELO-TEU-PROJETO')){
+    showBanner('Falta configurar o Supabase — edita config.js com o URL e a chave anon do teu projeto.', 'error');
+    document.getElementById('footer-note').textContent = 'Por configurar.';
+    return;
+  }
+
+  sb = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+
+  try {
+    await Promise.all([loadItems(), loadMovements()]);
+  } catch (e) {
+    showBanner('Não foi possível ligar ao Supabase — verifica o config.js e a ligação à internet.', 'error');
+    console.error(e);
+    return;
+  }
+
+  dbReady = true;
+  renderAll();
+
+  sb.channel('public:movements')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'movements' }, async () => {
+      await loadMovements();
+      renderAll();
+    })
+    .subscribe();
+
+  sb.channel('public:items')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'items' }, async () => {
+      await loadItems();
+      renderAll();
+    })
+    .subscribe();
+}
+
+init();
+</script>
+</body>
+</html>
