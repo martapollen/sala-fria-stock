@@ -50,7 +50,10 @@
     --warn:#8c1f35;
     --warn-soft:#f5e6e9;
     --focus:#c8395a;
-    --header-scrim: linear-gradient(100deg, rgba(15,16,15,.85) 0%, rgba(140,31,53,.5) 42%, rgba(15,16,15,.42) 100%);
+    --cta-bg:#171717;
+    --cta-bg-hover:#2c2c2c;
+    --cta-text:#faf9f7;
+    --header-scrim: linear-gradient(100deg, rgba(15,16,15,.88) 0%, rgba(140,31,53,.32) 42%, rgba(15,16,15,.55) 100%);
     --shadow: 0 1px 2px rgba(15,16,15,.07), 0 8px 20px rgba(15,16,15,.07);
   }
   @media (prefers-color-scheme: dark){
@@ -72,7 +75,10 @@
       --warn:#c9536c;
       --warn-soft:#2d161a;
       --focus:#f2bdca;
-      --header-scrim: linear-gradient(100deg, rgba(15,16,15,.90) 0%, rgba(140,31,53,.45) 42%, rgba(15,16,15,.55) 100%);
+      --cta-bg:#faf9f7;
+      --cta-bg-hover:#e2e0dc;
+      --cta-text:#0f100f;
+      --header-scrim: linear-gradient(100deg, rgba(15,16,15,.92) 0%, rgba(140,31,53,.28) 42%, rgba(15,16,15,.65) 100%);
       --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 24px rgba(0,0,0,.4);
     }
   }
@@ -94,7 +100,10 @@
     --warn:#c9536c;
     --warn-soft:#2d161a;
     --focus:#f2bdca;
-    --header-scrim: linear-gradient(110deg, rgba(15,16,15,.86) 0%, rgba(140,31,53,.55) 48%, rgba(15,16,15,.90) 100%);
+    --cta-bg:#faf9f7;
+    --cta-bg-hover:#e2e0dc;
+    --cta-text:#0f100f;
+    --header-scrim: linear-gradient(110deg, rgba(15,16,15,.90) 0%, rgba(140,31,53,.32) 48%, rgba(15,16,15,.92) 100%);
     --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 24px rgba(0,0,0,.4);
   }
 
@@ -136,7 +145,7 @@
     box-shadow:var(--shadow);
   }
   header.top h1{ color:#faf9f7; }
-  header.top .brand .mark{ color:#f8dfe5; background:rgba(15,16,15,.4); }
+  header.top .brand .mark{ color:#f8dfe5; }
   header.top .stat .n{ color:#faf9f7; }
   header.top .stat .l{ color:rgba(250,249,247,.72); }
   .brand{
@@ -146,14 +155,11 @@
   }
   .brand .mark{
     font-family:"Avantt", system-ui, sans-serif;
-    font-weight:600;
-    font-size:13px;
-    letter-spacing:.14em;
+    font-weight:400;
+    font-size:12px;
+    letter-spacing:.24em;
     text-transform:uppercase;
     color:var(--accent);
-    background:var(--accent-soft);
-    padding:3px 8px;
-    border-radius:4px;
   }
   h1{
     font-family:"Avantt", system-ui, sans-serif;
@@ -388,7 +394,7 @@
   .dir-btn{
     flex:1;
     padding:10px;
-    border-radius:8px;
+    border-radius:999px;
     border:1px solid var(--border-strong);
     background:var(--surface-2);
     color:var(--text);
@@ -410,11 +416,11 @@
 
   button.primary{
     width:100%;
-    padding:11px;
-    border-radius:8px;
+    padding:12px;
+    border-radius:999px;
     border:none;
-    background:var(--accent);
-    color:#fff;
+    background:var(--cta-bg);
+    color:var(--cta-text);
     font-family:"Avantt", system-ui, sans-serif;
     font-weight:600;
     font-size:15px;
@@ -422,7 +428,7 @@
     cursor:pointer;
     margin-top:2px;
   }
-  button.primary:hover{ background:var(--accent-hover); }
+  button.primary:hover{ background:var(--cta-bg-hover); }
   button.primary:disabled{
     background:var(--border-strong);
     color:var(--text-muted);
@@ -478,7 +484,7 @@
   }
   .history-filter button{
     background:none; border:1px solid var(--border-strong); color:var(--text-muted);
-    padding:4px 9px; border-radius:6px; font-size:12px; cursor:pointer; font-family:inherit;
+    padding:4px 10px; border-radius:999px; font-size:12px; cursor:pointer; font-family:inherit;
   }
   .history-filter button:hover{ color:var(--text); }
 
@@ -502,7 +508,7 @@
       <div class="brand">
         <span class="mark">Sala Fria</span>
       </div>
-      <h1>Registo de Movimentos de Stock</h1>
+      <h1>Registo de movimentos de stock</h1>
     </div>
     <div class="stats">
       <div class="stat"><span class="n num" id="stat-items">–</span><span class="l">Componentes</span></div>
