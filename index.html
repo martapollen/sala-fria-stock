@@ -265,7 +265,7 @@
   }
   table.item-table{
     width:100%;
-    min-width:440px;
+    min-width:500px;
     border-collapse:collapse;
     font-size:12px;
   }
@@ -292,7 +292,7 @@
   table.item-table td{ padding:7px 8px; vertical-align:top; color:var(--text); }
   td.col-produto{ white-space:nowrap; color:var(--text-muted); font-size:10.5px; }
   td.col-categoria{ font-size:10.5px; color:var(--text-muted); max-width:112px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  td.col-ref{ font-family:"IBM Plex Mono", monospace; font-size:10px; color:var(--text-muted); max-width:82px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  td.col-ref{ font-family:"IBM Plex Mono", monospace; font-size:10px; color:var(--text-muted); white-space:nowrap; }
   td.col-nome{ font-weight:500; }
   td.col-stock{
     font-family:"IBM Plex Mono", monospace;
@@ -476,6 +476,57 @@
   }
   .history-filter button:hover{ color:var(--text); }
 
+  .pill-btn{
+    background:none;
+    border:1px solid var(--accent);
+    color:var(--accent);
+    padding:5px 12px;
+    border-radius:999px;
+    font-size:12px;
+    font-family:"Avantt", system-ui, sans-serif;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .pill-btn:hover{ background:var(--accent-soft); }
+
+  .new-item-form{
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:14px;
+    margin-bottom:12px;
+    background:var(--surface-2);
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .new-item-form .nf-title{
+    font-family:"Avantt", system-ui, sans-serif;
+    font-weight:600;
+    font-size:14px;
+  }
+  .new-item-form .nf-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+  }
+  .new-item-form .nf-actions{
+    display:flex;
+    gap:8px;
+    justify-content:flex-end;
+  }
+  .new-item-form .nf-actions button{
+    padding:8px 16px;
+    border-radius:999px;
+    font-size:13px;
+    font-family:"Avantt", system-ui, sans-serif;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .new-item-form .nf-cancel{ background:none; border:1px solid var(--border-strong); color:var(--text-muted); }
+  .new-item-form .nf-submit{ background:var(--cta-bg); border:none; color:var(--cta-text); }
+  .new-item-form .nf-submit:disabled{ background:var(--border-strong); color:var(--text-muted); cursor:not-allowed; }
+  .new-item-form .nf-note{ font-size:12px; color:var(--warn); min-height:16px; }
+
   .footer-note{
     margin-top:22px;
     font-size:12px;
@@ -510,8 +561,12 @@
   <div class="grid">
     <!-- LEFT: search + inventory -->
     <div class="panel">
-      <div class="panel-head"><h2>Componentes</h2></div>
+      <div class="panel-head">
+        <h2>Componentes</h2>
+        <button type="button" class="pill-btn" id="btn-new-item">+ Novo componente</button>
+      </div>
       <div class="panel-body">
+        <div id="new-item-form"></div>
         <div class="search-box">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
           <input type="text" id="search" placeholder="Pesquisar por nome, categoria ou referência…" autocomplete="off">
@@ -580,6 +635,23 @@ const TEAM_MEMBERS = [
 const norm = s => (s || '').toString()
   .normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
   .toLowerCase().trim();
+
+const slugify = s => (s || '').toString()
+  .normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
+  .toLowerCase()
+  .replace(/[^a-z0-9]+/g, '-')
+  .replace(/^-+|-+$/g, '') || 'item';
+
+function uniqueId(nome){
+  const base = slugify(nome).slice(0, 40);
+  let id = base;
+  let n = 2;
+  while (items.has(id)){
+    id = `${base}-${n}`;
+    n++;
+  }
+  return id;
+}
 
 const catOrder = cat => {
   const m = /^(\d+(?:\.\d+)?)/.exec(cat || '');
@@ -673,7 +745,7 @@ function renderList(){
 
   list.innerHTML = `<table class="item-table">
     <colgroup>
-      <col style="width:64px"><col style="width:104px"><col style="width:76px"><col><col style="width:72px">
+      <col style="width:64px"><col style="width:104px"><col style="width:140px"><col><col style="width:72px">
     </colgroup>
     <thead>
       <tr>
@@ -730,10 +802,10 @@ function renderSelected(){
       <div class="form-row">
         <div class="field">
           <label for="f-person">Quem movimentou</label>
-          <select id="f-person">
-            <option value="">Escolhe o teu nome…</option>
-            ${TEAM_MEMBERS.map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('')}
-          </select>
+          <input type="text" id="f-person" list="team-names" placeholder="Escreve para pesquisar…" autocomplete="off">
+          <datalist id="team-names">
+            ${TEAM_MEMBERS.map(n => `<option value="${escapeHtml(n)}">`).join('')}
+          </datalist>
         </div>
         <div class="field" style="max-width:130px;">
           <label for="f-qty">Quantidade</label>
@@ -759,7 +831,13 @@ function renderSelected(){
   function updatePreview(){
     const qty = parseFloat(qtyEl.value);
     const person = personEl.value.trim();
-    submitBtn.disabled = !(person && qty > 0 && dbReady);
+    const personValid = TEAM_MEMBERS.includes(person);
+    submitBtn.disabled = !(personValid && qty > 0 && dbReady);
+    if (person && !personValid){
+      preview.textContent = 'Escolhe um nome da lista.';
+      preview.className = 'result-preview warn';
+      return;
+    }
     if (!qty || qty <= 0){
       preview.textContent = '';
       preview.className = 'result-preview';
@@ -789,7 +867,7 @@ function renderSelected(){
   submitBtn.addEventListener('click', async () => {
     const qty = parseFloat(qtyEl.value);
     const person = personEl.value.trim();
-    if (!(person && qty > 0)) return;
+    if (!(TEAM_MEMBERS.includes(person) && qty > 0)) return;
     submitBtn.disabled = true;
     submitBtn.textContent = 'A registar…';
     const delta = direction === 'in' ? qty : -qty;
@@ -818,6 +896,107 @@ function renderSelected(){
       freshPreview.textContent = 'Movimento registado.';
       freshPreview.className = 'result-preview ok';
     }
+  });
+}
+
+let showNewItemForm = false;
+
+function renderNewItemForm(){
+  const container = document.getElementById('new-item-form');
+  if (!showNewItemForm){
+    container.innerHTML = '';
+    return;
+  }
+
+  const produtos = Array.from(new Set(Array.from(items.values()).map(it => it.produto).filter(Boolean))).sort();
+  const categorias = Array.from(new Set(Array.from(items.values()).map(it => it.categoria).filter(Boolean))).sort();
+
+  container.innerHTML = `
+    <div class="new-item-form">
+      <div class="nf-title">Novo componente</div>
+      <div class="field" style="margin-bottom:0;">
+        <label for="nf-nome">Nome</label>
+        <input type="text" id="nf-nome" placeholder="Nome do componente" autocomplete="off">
+      </div>
+      <div class="nf-grid">
+        <div class="field" style="margin-bottom:0;">
+          <label for="nf-produto">Produto</label>
+          <input type="text" id="nf-produto" list="nf-produtos" placeholder="ex. Station" autocomplete="off">
+          <datalist id="nf-produtos">${produtos.map(p => `<option value="${escapeHtml(p)}">`).join('')}</datalist>
+        </div>
+        <div class="field" style="margin-bottom:0;">
+          <label for="nf-categoria">Categoria</label>
+          <input type="text" id="nf-categoria" list="nf-categorias" placeholder="ex. 3.1 - Dune electrical area" autocomplete="off">
+          <datalist id="nf-categorias">${categorias.map(c => `<option value="${escapeHtml(c)}">`).join('')}</datalist>
+        </div>
+        <div class="field" style="margin-bottom:0;">
+          <label for="nf-ref">REF</label>
+          <input type="text" id="nf-ref" placeholder="Referência" autocomplete="off">
+        </div>
+        <div class="field" style="margin-bottom:0;">
+          <label for="nf-qty">Quantidade inicial</label>
+          <input type="number" id="nf-qty" min="0" step="any" placeholder="0" inputmode="decimal">
+        </div>
+      </div>
+      <div class="nf-note" id="nf-note"></div>
+      <div class="nf-actions">
+        <button type="button" class="nf-cancel" id="nf-cancel">Cancelar</button>
+        <button type="button" class="nf-submit" id="nf-submit" disabled>Adicionar</button>
+      </div>
+    </div>
+  `;
+
+  const nomeEl = document.getElementById('nf-nome');
+  const produtoEl = document.getElementById('nf-produto');
+  const categoriaEl = document.getElementById('nf-categoria');
+  const refEl = document.getElementById('nf-ref');
+  const qtyEl = document.getElementById('nf-qty');
+  const submitBtn = document.getElementById('nf-submit');
+  const note = document.getElementById('nf-note');
+
+  function checkValid(){
+    const qtyNum = parseFloat(qtyEl.value);
+    const filled = nomeEl.value.trim() && produtoEl.value.trim() && categoriaEl.value.trim()
+      && refEl.value.trim() && qtyEl.value !== '' && !isNaN(qtyNum) && qtyNum >= 0;
+    submitBtn.disabled = !(filled && dbReady);
+    return filled;
+  }
+  [nomeEl, produtoEl, categoriaEl, refEl, qtyEl].forEach(el => {
+    el.addEventListener('input', () => { checkValid(); note.textContent = ''; });
+  });
+  checkValid();
+  nomeEl.focus();
+
+  document.getElementById('nf-cancel').addEventListener('click', () => {
+    showNewItemForm = false;
+    renderNewItemForm();
+  });
+
+  submitBtn.addEventListener('click', async () => {
+    if (!checkValid()) return;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'A adicionar…';
+    const nome = nomeEl.value.trim();
+    const id = uniqueId(nome);
+    const { error } = await sb.from('items').insert({
+      id,
+      nome,
+      produto: produtoEl.value.trim(),
+      categoria: categoriaEl.value.trim(),
+      ref: refEl.value.trim(),
+      qty: parseFloat(qtyEl.value),
+    });
+    if (error){
+      note.textContent = 'Erro ao adicionar — tenta novamente.';
+      console.error(error);
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Adicionar';
+      return;
+    }
+    await loadItems();
+    showNewItemForm = false;
+    renderAll();
+    selectItem(id);
   });
 }
 
@@ -861,6 +1040,11 @@ document.getElementById('clear-filter').addEventListener('click', () => {
   renderSelected();
   renderHistoryFilterUI();
   renderHistory();
+});
+
+document.getElementById('btn-new-item').addEventListener('click', () => {
+  showNewItemForm = !showNewItemForm;
+  renderNewItemForm();
 });
 
 document.getElementById('search').addEventListener('input', renderList);

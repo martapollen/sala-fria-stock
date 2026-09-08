@@ -56,8 +56,10 @@ left join (
 
 -- ────────────────────────────────────────────────────────────────
 -- 3. Row Level Security
---    Catálogo (items): qualquer pessoa com a chave pública (anon) pode ler,
---    ninguém pode escrever por essa via (só tu, a partir do SQL Editor).
+--    Catálogo (items): qualquer pessoa com a chave pública (anon) pode ler
+--    e adicionar um componente novo (todos os campos obrigatórios, impostos
+--    pela app), mas não editar nem apagar os já existentes — isso continua
+--    reservado ao SQL Editor.
 --    Movimentos: qualquer pessoa com a chave pública pode ler e criar
 --    (registar um movimento), mas não editar nem apagar — é um livro de
 --    registo, tal como na app original.
@@ -70,6 +72,17 @@ drop policy if exists "items are publicly readable" on items;
 create policy "items are publicly readable"
   on items for select
   using (true);
+
+drop policy if exists "anyone can add a new component" on items;
+create policy "anyone can add a new component"
+  on items for insert
+  with check (
+    nome is not null and nome <> '' and
+    produto is not null and produto <> '' and
+    categoria is not null and categoria <> '' and
+    ref is not null and ref <> '' and
+    qty is not null
+  );
 
 drop policy if exists "movements are publicly readable" on movements;
 create policy "movements are publicly readable"
