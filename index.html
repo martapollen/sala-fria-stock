@@ -225,7 +225,7 @@
   }
   .panel-body{ padding:14px 16px 16px; }
 
-  input[type="text"], input[type="number"]{
+  input[type="text"], input[type="number"], select{
     width:100%;
     background:var(--surface-2);
     border:1px solid var(--border-strong);
@@ -235,7 +235,8 @@
     font-family:inherit;
     font-size:14px;
   }
-  input:focus{
+  select{ cursor:pointer; }
+  input:focus, select:focus{
     outline:2px solid var(--focus);
     outline-offset:1px;
   }
@@ -558,11 +559,24 @@
   <div class="footer-note" id="footer-note">A carregar inventário…</div>
 </div>
 
-<datalist id="known-names"></datalist>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="./config.js"></script>
 <script>
+const TEAM_MEMBERS = [
+  'Marta Portugal',
+  'Luís Brás',
+  'Marco Lopes',
+  'Tiago Cabecinha',
+  'Diogo Neves',
+  'Lucas Dias',
+  'Rui Bento',
+  'Luís Palha',
+  'Inês Góis',
+  'Gabriel Brito',
+  'Miguel Morgado',
+  'Pipa Corrêa Mendes',
+];
+
 const norm = s => (s || '').toString()
   .normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
   .toLowerCase().trim();
@@ -716,7 +730,10 @@ function renderSelected(){
       <div class="form-row">
         <div class="field">
           <label for="f-person">Quem movimentou</label>
-          <input type="text" id="f-person" list="known-names" placeholder="Nome" autocomplete="off">
+          <select id="f-person">
+            <option value="">Escolhe o teu nome…</option>
+            ${TEAM_MEMBERS.map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('')}
+          </select>
         </div>
         <div class="field" style="max-width:130px;">
           <label for="f-qty">Quantidade</label>
@@ -737,7 +754,7 @@ function renderSelected(){
   const preview = document.getElementById('result-preview');
 
   const lastPerson = localStorage.getItem('salafria_last_person');
-  if (lastPerson) personEl.value = lastPerson;
+  if (lastPerson && TEAM_MEMBERS.includes(lastPerson)) personEl.value = lastPerson;
 
   function updatePreview(){
     const qty = parseFloat(qtyEl.value);
@@ -765,6 +782,7 @@ function renderSelected(){
   }
 
   personEl.addEventListener('input', updatePreview);
+  personEl.addEventListener('change', updatePreview);
   qtyEl.addEventListener('input', updatePreview);
   updatePreview();
 
@@ -837,12 +855,6 @@ function renderHistory(){
   }).join('');
 }
 
-function renderKnownNames(){
-  const dl = document.getElementById('known-names');
-  const names = Array.from(new Set(movements.map(m => m.person).filter(Boolean)));
-  dl.innerHTML = names.map(n => `<option value="${escapeHtml(n)}">`).join('');
-}
-
 document.getElementById('clear-filter').addEventListener('click', () => {
   selectedId = null;
   renderList();
@@ -869,7 +881,6 @@ function renderAll(){
   renderList();
   renderSelected();
   renderHistory();
-  renderKnownNames();
 }
 
 async function loadItems(){
