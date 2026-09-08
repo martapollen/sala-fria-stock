@@ -796,14 +796,17 @@ function renderSelected(){
     if (error){
       submitBtn.textContent = 'Erro — tenta novamente';
       console.error(error);
-    } else {
-      localStorage.setItem('salafria_last_person', person);
-      qtyEl.value = '';
-      updatePreview();
-      submitBtn.textContent = 'Registado ✓';
-      setTimeout(() => { submitBtn.textContent = 'Registar movimento'; }, 1200);
+      submitBtn.disabled = !(personEl.value.trim() && parseFloat(qtyEl.value) > 0 && dbReady);
+      return;
     }
-    submitBtn.disabled = !(personEl.value.trim() && parseFloat(qtyEl.value) > 0 && dbReady);
+    localStorage.setItem('salafria_last_person', person);
+    await loadMovements();
+    renderAll();
+    const freshPreview = document.getElementById('result-preview');
+    if (freshPreview){
+      freshPreview.textContent = 'Movimento registado.';
+      freshPreview.className = 'result-preview ok';
+    }
   });
 }
 

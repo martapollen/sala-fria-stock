@@ -82,7 +82,29 @@ create policy "anyone can register a movement"
   with check (true);
 
 -- ────────────────────────────────────────────────────────────────
--- 4. Catálogo de componentes (134 itens, com as 7 quantidades
+-- 4. Realtime — sem isto, os outros separadores/pessoas com a página
+--    aberta só veem um movimento novo depois de recarregar a página.
+--    (idempotente: não falha se já estiver ativado)
+-- ────────────────────────────────────────────────────────────────
+
+do $$
+begin
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'items'
+  ) then
+    execute 'alter publication supabase_realtime add table public.items';
+  end if;
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'movements'
+  ) then
+    execute 'alter publication supabase_realtime add table public.movements';
+  end if;
+end $$;
+
+-- ────────────────────────────────────────────────────────────────
+-- 5. Catálogo de componentes (134 itens, com as 7 quantidades
 --    corrigidas: cabos "<25m" → ~25m, "100m" → 100m, "varios" → por confirmar)
 -- ────────────────────────────────────────────────────────────────
 
