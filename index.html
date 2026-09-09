@@ -189,6 +189,88 @@
     margin-bottom:18px;
   }
 
+  .view-tabs{
+    display:flex;
+    gap:8px;
+    margin-bottom:20px;
+  }
+  .view-tab{
+    background:none;
+    border:1px solid var(--border-strong);
+    color:var(--text-muted);
+    padding:7px 16px;
+    border-radius:999px;
+    font-family:"Avantt", system-ui, sans-serif;
+    font-weight:600;
+    font-size:13px;
+    cursor:pointer;
+  }
+  .view-tab.active{
+    background:var(--cta-bg);
+    border-color:var(--cta-bg);
+    color:var(--cta-text);
+  }
+
+  .bom-tabs{ display:flex; gap:8px; }
+  .bom-tab{
+    background:none;
+    border:1px solid var(--border-strong);
+    color:var(--text-muted);
+    padding:5px 14px;
+    border-radius:999px;
+    font-family:"Avantt", system-ui, sans-serif;
+    font-weight:600;
+    font-size:12px;
+    cursor:pointer;
+  }
+  .bom-tab.active{ background:var(--accent-soft); border-color:var(--accent); color:var(--accent); }
+
+  .bom-summary{
+    display:flex;
+    gap:24px;
+    flex-wrap:wrap;
+    padding:12px 14px;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:10px;
+    margin-bottom:14px;
+  }
+  .bom-summary .bs{ display:flex; flex-direction:column; gap:2px; }
+  .bom-summary .bs .n{
+    font-family:"IBM Plex Mono", monospace;
+    font-weight:500;
+    font-size:20px;
+  }
+  .bom-summary .bs .l{
+    font-size:10.5px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--text-muted);
+  }
+
+  table.bom-table{ width:100%; border-collapse:collapse; font-size:13px; min-width:640px; }
+  table.bom-table th{
+    text-align:left;
+    font-size:10.5px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--text-muted);
+    font-weight:600;
+    padding:0 10px 8px;
+    border-bottom:1px solid var(--border);
+  }
+  table.bom-table td{
+    padding:8px 10px;
+    border-bottom:1px solid var(--border);
+    vertical-align:top;
+  }
+  table.bom-table tr:last-child td{ border-bottom:none; }
+  td.bom-ref{ font-family:"IBM Plex Mono", monospace; font-size:11.5px; color:var(--text-muted); white-space:nowrap; }
+  td.bom-qty{ font-family:"IBM Plex Mono", monospace; text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  td.bom-stock{ text-align:right; font-family:"IBM Plex Mono", monospace; font-weight:500; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  td.bom-stock.zero{ color:var(--bad); }
+  td.bom-stock.na{ color:var(--text-muted); font-style:italic; font-weight:400; font-family:inherit; font-size:12px; }
+
   .grid{
     display:grid;
     grid-template-columns: minmax(660px, 720px) 1fr;
@@ -552,66 +634,100 @@
     <div class="stats">
       <div class="stat"><span class="n num" id="stat-items">–</span><span class="l">Componentes</span></div>
       <div class="stat"><span class="n num" id="stat-moves">–</span><span class="l">Movimentos hoje</span></div>
-      <div class="stat"><span class="n num" id="stat-low">–</span><span class="l">Stock a zero</span></div>
     </div>
   </header>
 
+  <div class="view-tabs">
+    <button type="button" class="view-tab active" id="tab-movimentos">Movimentos</button>
+    <button type="button" class="view-tab" id="tab-boms">BOMs</button>
+  </div>
+
   <div id="status-banner"></div>
 
-  <div class="grid">
-    <!-- LEFT: search + inventory -->
-    <div class="panel">
-      <div class="panel-head">
-        <h2>Componentes</h2>
-        <button type="button" class="pill-btn" id="btn-new-item">+ Novo componente</button>
-      </div>
-      <div class="panel-body">
-        <div id="new-item-form"></div>
-        <div class="search-box">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
-          <input type="text" id="search" placeholder="Pesquisar por nome, categoria ou referência…" autocomplete="off">
+  <div id="view-movimentos">
+    <div class="grid">
+      <!-- LEFT: search + inventory -->
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Componentes</h2>
+          <button type="button" class="pill-btn" id="btn-new-item">+ Novo componente</button>
         </div>
-        <div class="item-list" id="item-list"></div>
+        <div class="panel-body">
+          <div id="new-item-form"></div>
+          <div class="search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+            <input type="text" id="search" placeholder="Pesquisar por nome, categoria ou referência…" autocomplete="off">
+          </div>
+          <div class="item-list" id="item-list"></div>
+        </div>
+      </div>
+
+      <!-- RIGHT: selected item + form + history -->
+      <div style="display:flex; flex-direction:column; gap:20px;">
+        <div class="panel">
+          <div id="selected-area">
+            <div class="no-selection">Escolhe um componente na lista à esquerda para registar um movimento.</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h2>Histórico de movimentos</h2>
+            <div class="history-filter" id="history-filter" style="display:none;">
+              <span>Filtrado por componente selecionado</span>
+              <button id="clear-filter">Ver todos</button>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="table-scroll">
+              <table id="history-table">
+                <thead>
+                  <tr>
+                    <th>Data / Hora</th>
+                    <th>Pessoa</th>
+                    <th>Componente</th>
+                    <th style="text-align:right;">Qtd.</th>
+                  </tr>
+                </thead>
+                <tbody id="history-body"></tbody>
+              </table>
+            </div>
+            <div class="empty-hint" id="history-empty" style="display:none;">Ainda não há movimentos registados.</div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- RIGHT: selected item + form + history -->
-    <div style="display:flex; flex-direction:column; gap:20px;">
-      <div class="panel">
-        <div id="selected-area">
-          <div class="no-selection">Escolhe um componente na lista à esquerda para registar um movimento.</div>
+    <div class="footer-note" id="footer-note">A carregar inventário…</div>
+  </div>
+
+  <div id="view-boms" style="display:none;">
+    <div class="panel">
+      <div class="panel-head">
+        <h2>BOMs — Dune v1.7</h2>
+        <div class="bom-tabs">
+          <button type="button" class="bom-tab active" id="bom-tab-station">Station</button>
+          <button type="button" class="bom-tab" id="bom-tab-slot">Slot</button>
         </div>
       </div>
-
-      <div class="panel">
-        <div class="panel-head">
-          <h2>Histórico de movimentos</h2>
-          <div class="history-filter" id="history-filter" style="display:none;">
-            <span>Filtrado por componente selecionado</span>
-            <button id="clear-filter">Ver todos</button>
-          </div>
-        </div>
-        <div class="panel-body">
-          <div class="table-scroll">
-            <table id="history-table">
-              <thead>
-                <tr>
-                  <th>Data / Hora</th>
-                  <th>Pessoa</th>
-                  <th>Componente</th>
-                  <th style="text-align:right;">Qtd.</th>
-                </tr>
-              </thead>
-              <tbody id="history-body"></tbody>
-            </table>
-          </div>
-          <div class="empty-hint" id="history-empty" style="display:none;">Ainda não há movimentos registados.</div>
+      <div class="panel-body">
+        <div id="bom-summary"></div>
+        <div class="table-scroll">
+          <table class="bom-table" id="bom-table">
+            <thead>
+              <tr>
+                <th>REF</th>
+                <th>Componente</th>
+                <th style="text-align:right;">Qtd. / unidade</th>
+                <th style="text-align:right;">Stock atual</th>
+              </tr>
+            </thead>
+            <tbody id="bom-body"></tbody>
+          </table>
         </div>
       </div>
     </div>
   </div>
-
-  <div class="footer-note" id="footer-note">A carregar inventário…</div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
@@ -631,6 +747,8 @@ const TEAM_MEMBERS = [
   'Miguel Morgado',
   'Pipa Corrêa Mendes',
 ];
+
+const BOM_DATA = {"station":[{"ref":"STN-D-WLD-001","nome":"CABIN","qty":1.0,"unit":"un.","itemId":null},{"ref":"STN-D-WLD-002","nome":"DOOR","qty":1.0,"unit":"un.","itemId":null},{"ref":"STN-D-WLD-003","nome":"DOOR PANEL","qty":1.0,"unit":"un.","itemId":"door-panel"},{"ref":"STN-D-WLD-004","nome":"TOP PANEL","qty":1.0,"unit":"un.","itemId":null},{"ref":"STN-D-WLD-005","nome":"LOCK COVER","qty":1.0,"unit":"un.","itemId":"lock-cover"},{"ref":"STN-D-WLD-006","nome":"LOWER HINGE SUPPORT","qty":1.0,"unit":"un.","itemId":null},{"ref":"STN-D-WLD-007","nome":"ROD LOCK","qty":1.0,"unit":"un.","itemId":null},{"ref":"STN-D-PRT-051","nome":"CABIN ACESS PANEL","qty":1.0,"unit":"un.","itemId":null},{"ref":"STN-D-PRT-052","nome":"LOCK PLATE","qty":1.0,"unit":"un.","itemId":null},{"ref":"STN-D-PRT-058","nome":"DOOR ACESS PANEL","qty":2.0,"unit":"un.","itemId":null},{"ref":"STN-D-PRT-059","nome":"ROD LOCK MOUNTING PLATE","qty":1.0,"unit":"un.","itemId":null},{"ref":"STN-D-PRT-064","nome":"VERTICAL SLOT HOLDER","qty":4.0,"unit":"un.","itemId":null},{"ref":"STN-D-PRT-065","nome":"REAR 3PH COVER","qty":1.0,"unit":"un.","itemId":"rear-3ph-cover"},{"ref":"STN-D-WLD-008","nome":"ELECTRICAL BOX","qty":1.0,"unit":"un.","itemId":null},{"ref":"STN-D-PRT-069","nome":"SWITCH HOLDER","qty":1.0,"unit":"un.","itemId":null},{"ref":"DIN 6923 M4","nome":"NUT DIN 6923 M4","qty":120,"unit":"un.","itemId":null},{"ref":"DIN 985 M5","nome":"NUT DIN 985 NYLOC M5","qty":24.0,"unit":"un.","itemId":null},{"ref":"DIN 912 - M4 x 12","nome":"BOLT DIN 912 - M4 x 12","qty":17.0,"unit":"un.","itemId":null},{"ref":"DIN 912 - M4 x 20","nome":"BOLT DIN 912 - M4 x 20","qty":8.0,"unit":"un.","itemId":null},{"ref":"DIN 912 M5 x 16","nome":"BOLT DIN 912 - M5 x 16","qty":9.0,"unit":"un.","itemId":null},{"ref":"ISO 10642 - M4 x 16","nome":"BOLT ISO 10642 - M4 x 16","qty":24.0,"unit":"un.","itemId":null},{"ref":"ISO 10642 - M5 x 16","nome":"BOLT ISO 10642 - M5 x 16","qty":53,"unit":"un.","itemId":null},{"ref":"ISO 10642 - M8 x 20","nome":"BOLT ISO 10642 - M8 x 20","qty":3.0,"unit":"un.","itemId":null},{"ref":"ISO 7380-2 - M4 x 12","nome":"BOLT ISO 7380 - M4 x 12","qty":27.0,"unit":"un.","itemId":null},{"ref":"ISO 7380 - M5 x 16","nome":"BOLT ISO 7380 - M5 x 16","qty":15.0,"unit":"un.","itemId":null},{"ref":"DIN 125 A 4.3 - M4","nome":"WASHER DIN 125 A 4.3 - M4","qty":2.0,"unit":"un.","itemId":null},{"ref":"DIN 912 M6 x 16","nome":"BOLT DIN 912 - M6 x 16","qty":4.0,"unit":"un.","itemId":null},{"ref":"ISO 4035 M16","nome":"NUT ISO 4035 M16","qty":8.0,"unit":"un.","itemId":null},{"ref":"Dust cover","nome":"120 MM FAN DUST COVER","qty":6.0,"unit":"un.","itemId":"fan-dust-cover"},{"ref":"1SNF100023R0000","nome":"M32 CABLE GLAND","qty":1.0,"unit":"un.","itemId":"m32-cable-gland"},{"ref":"301-2090","nome":"V CABLE DUSCT - Closed Black, 25 mm x 60 mm, 2 m long","qty":4.0,"unit":"un.","itemId":null},{"ref":"AF25489B22ML","nome":"Big FAN","qty":1.0,"unit":"un.","itemId":null},{"ref":"MS413Y","nome":"MS413Y - Zinc Alloy Industrial Cabinet Cam Lock","qty":1.0,"unit":"un.","itemId":"ms413y-zinc-alloy-industrial-cabinet-cam"},{"ref":"RITTAL-2411601","nome":"M12 x 1.5 - CABLE GLAND","qty":2.0,"unit":"un.","itemId":"m12-x-1-5-cable-gland"},{"ref":"GN 6311.4-50-M16-114-G","nome":"Leveling feet with sliding plastic cap.","qty":4.0,"unit":"un.","itemId":null},{"ref":"1200100059.0","nome":"HANDLE WITH SQUARE BASES","qty":2.0,"unit":"un.","itemId":"handle-with-square-bases"},{"ref":"STN-D-PRT-070","nome":"ELECTRICAL BOX COVER","qty":1.0,"unit":"un.","itemId":null},{"ref":"DUNE_PS","nome":"Dune_Mains_Power_Switch_v1.0","qty":3.0,"unit":"un.","itemId":null},{"ref":"DUNE_LED","nome":"Dune_Station_LED_v1.1","qty":1.0,"unit":"un.","itemId":null},{"ref":"RPI_HAT","nome":"Pi_HAT PCBA","qty":1.0,"unit":"un.","itemId":null},{"ref":"PS_MAINS","nome":"From Power Switch to Slot Breakout PCB","qty":1.0,"unit":"un.","itemId":null},{"ref":"CAN_FIRST","nome":"From PiHat to Slot #20 Breakout PCB","qty":1.0,"unit":"un.","itemId":null},{"ref":"CAN_NEXT_V","nome":"From Slot Breakout PCB to Slot Breakout PCB","qty":3.0,"unit":"un.","itemId":null},{"ref":"CAN_NEXT_H","nome":"From Slot Breakout PCB to Slot Breakout PCB","qty":16.0,"unit":"un.","itemId":null},{"ref":"MAINS_LED","nome":"From Power Switch to Station LED","qty":1.0,"unit":"un.","itemId":null},{"ref":"PS_SW","nome":"From PiHat to Power Switch","qty":1.0,"unit":"un.","itemId":null},{"ref":"V_WATER","nome":"From PiHat to Water Sensor","qty":1.0,"unit":"un.","itemId":null},{"ref":"V_NTC1","nome":"From PiHat to NTC1","qty":1.0,"unit":"un.","itemId":null},{"ref":"V_NTC2","nome":"From PiHat to NTC2","qty":1.0,"unit":"un.","itemId":null},{"ref":"SC1431","nome":"Raspberry Pi 5","qty":1.0,"unit":"un.","itemId":null},{"ref":"Raspberry Pi SC1408","nome":"RPi + Router Power Supply","qty":2.0,"unit":"un.","itemId":"rpi-router-power-supply"},{"ref":null,"nome":"SD Memory Card","qty":1.0,"unit":"un.","itemId":null},{"ref":"JOY-IT RB","nome":"Electrical Area Fan Diogo Neves","qty":1.0,"unit":"un.","itemId":null},{"ref":"100017.0","nome":"3-Phase Connector Miguel Morgado","qty":1.0,"unit":"un","itemId":"3-phase-connector"},{"ref":"RCBO Type A Curve B","nome":"Circuit Breaker with WiFi","qty":1.0,"unit":"un","itemId":null},{"ref":null,"nome":"Conectores de cabo Diogo Neves","qty":25.0,"unit":"un","itemId":null},{"ref":null,"nome":"Conectores de cabo Diogo Neves","qty":3.0,"unit":"un","itemId":null},{"ref":null,"nome":"Conectores de cabo Diogo Neves","qty":10.0,"unit":"un","itemId":null},{"ref":null,"nome":"3-Phase Isolator (botoneira)","qty":1.0,"unit":"un","itemId":"power-switch-disconnector-3-phase-isolat"},{"ref":null,"nome":"Water Detector","qty":1.0,"unit":"un.","itemId":"water-detector"},{"ref":null,"nome":"Router - Ubiquity Mobile Ultra","qty":1.0,"unit":"un.","itemId":"router-ubiquity-mobile-ultra"},{"ref":null,"nome":"Ethernet Cable 0.3mm","qty":1.0,"unit":"un.","itemId":"ethernet-cable-0-3mm"},{"ref":null,"nome":"Antenna LTE","qty":2.0,"unit":"un.","itemId":"antenna-lte"},{"ref":null,"nome":"Antenna WiFi","qty":1.0,"unit":"un.","itemId":"antenna-wifi"},{"ref":null,"nome":"SIM Card","qty":1.0,"unit":"un.","itemId":null},{"ref":null,"nome":"DIN Rail","qty":0.6,"unit":"m","itemId":null},{"ref":"FN3256H-36-33","nome":"Line Filters","qty":1.0,"unit":"un","itemId":"schaffner-line-filter"},{"ref":"1SNF100023R0000","nome":"Fan and lighting fuse holder","qty":1.0,"unit":"un","itemId":"fan-and-lighting-fuse-holder"},{"ref":"420502.0","nome":"Fan and lighting fuse, 2A, 32mm x 8mm","qty":1.0,"unit":"un","itemId":"fan-and-lighting-fuse-2a-32mm-x-8mm"},{"ref":"TE-100","nome":"Schucko for RPi, router","qty":2.0,"unit":"un","itemId":null},{"ref":null,"nome":"Flexible Power Cable Red","qty":5.0,"unit":"m","itemId":"red-cable"},{"ref":null,"nome":"Flexible Power Cable Black","qty":5.0,"unit":"m","itemId":"black-cable"},{"ref":null,"nome":"Flexible Power Cable Green","qty":5.0,"unit":"m","itemId":null},{"ref":null,"nome":"Flexible Power Cable Blue","qty":5.0,"unit":"m","itemId":"blue-cable"},{"ref":null,"nome":"Flexible Power Cable Brown","qty":5.0,"unit":"m","itemId":"brown-cable"},{"ref":null,"nome":"Flexible Thin Cable Blue","qty":2.0,"unit":"m","itemId":null},{"ref":null,"nome":"Flexible Thin Cable Brown","qty":2.0,"unit":"m","itemId":"flexible-thin-cable-brown"},{"ref":null,"nome":"Lamps - 35mm, 3500-4000K","qty":2.0,"unit":"un","itemId":"lamps-35mm-3500-4000k"},{"ref":null,"nome":"Lamp Support - GU10; cerâmica; Saí: fios","qty":2.0,"unit":"un","itemId":"lamp-support-gu10-ceramica-sai-fios"},{"ref":null,"nome":"Plastic base for Power Switch","qty":3.0,"unit":"un","itemId":null},{"ref":null,"nome":"Plastic base for RPi","qty":1.0,"unit":"un","itemId":null},{"ref":null,"nome":"Plastic base for Router","qty":1.0,"unit":"un","itemId":null},{"ref":null,"nome":"Plastic cable guide","qty":2.0,"unit":"un","itemId":null},{"ref":null,"nome":"Antenna LTE","qty":2.0,"unit":"un","itemId":"antenna-lte"},{"ref":"BMQM108007C","nome":"Neutral Din Conector","qty":2.0,"unit":"un","itemId":"neutral-din-conector"},{"ref":"UEB6-63L/C061","nome":"Circuit Breaker for Fan, Light and Router","qty":1.0,"unit":"un","itemId":"circuit-breaker-for-fan-light-and-router"},{"ref":"82202964.0","nome":"Fita de calafetagem BORRACHA 2-6MMX6M","qty":2.2,"unit":"un","itemId":"fita-de-calafetagem-borracha-2-6mmx6m"}],"slot":[{"ref":"SLT-D-WLD-007","nome":"TOP HALF SHEET METAL","qty":1.0,"unit":"un.","itemId":null},{"ref":"SLT-D-WLD-006","nome":"CHARGER HOLDER","qty":1.0,"unit":"un.","itemId":null},{"ref":"SLT-D-WLD-001","nome":"FRONT SHEET METAL","qty":1.0,"unit":"un.","itemId":null},{"ref":"SLT-D-WLD-002","nome":"BOTTOM HALF SHEET METAL","qty":1.0,"unit":"un.","itemId":null},{"ref":"SLT-D-WLD-003","nome":"SLOT BACK PLATE","qty":1.0,"unit":"un.","itemId":null},{"ref":"SLT-D-WLD-004","nome":"WATER DRAINER","qty":1.0,"unit":"un.","itemId":null},{"ref":"SLT-D-WLD-005","nome":"SLOT WALL HOLDER","qty":1.0,"unit":"un.","itemId":null},{"ref":"NYLON DIN 125 A 4.3","nome":"NYLON WASHER DIN 125 M4","qty":4.0,"unit":"un.","itemId":null},{"ref":"DIN 125 - A 4.3","nome":"WASHER DIN 125 M4","qty":4.0,"unit":"un.","itemId":null},{"ref":"DIN 125 - A 8.4","nome":"WASHER DIN 125 M8","qty":4.0,"unit":"un.","itemId":null},{"ref":"DIN 934 M4","nome":"NUT ISO - 4032 - M4","qty":4.0,"unit":"un.","itemId":null},{"ref":"DIN 985 M3","nome":"NUT DIN 985 M3","qty":4.0,"unit":"un.","itemId":null},{"ref":"DIN 985 M8","nome":"NUT DIN 985 M8","qty":2.0,"unit":"un.","itemId":null},{"ref":"DIN 912 M3 x 8","nome":"BOLT DIN 912 M3 x 8","qty":2.0,"unit":"un.","itemId":null},{"ref":"DIN 912 M4 x 6","nome":"BOLT DIN 912 M4 x 6","qty":2.0,"unit":"un.","itemId":null},{"ref":"DIN 912 M4 x 12","nome":"BOLT DIN 912 - M4 x 12","qty":2.0,"unit":"un.","itemId":null},{"ref":"DIN 912 M8 x 80","nome":"BOLT DIN 912 - M8 x 80","qty":2.0,"unit":"un.","itemId":null},{"ref":"ISO 7380 - M4 x 16","nome":"BOLT ISO 7380 - M4 x 16","qty":10.0,"unit":"un.","itemId":null},{"ref":"ISO 14585 - ST3.5 x 9.5","nome":"SCREW ISO 14585 - ST3.5 x 9.5","qty":10.0,"unit":"un.","itemId":null},{"ref":"SPACER ID4.2 x OD7 x L7","nome":"SPACER ID4.2 x OD7 x L7","qty":4.0,"unit":"un.","itemId":null},{"ref":"SPACER ID3.2 x OD7 x L12","nome":"SPACER ID3.2 x OD7 x L12","qty":2.0,"unit":"un.","itemId":null},{"ref":"SPACER ID3.2 x OD7 x L6","nome":"SPACER ID 3.2 x OD7 x L6","qty":4.0,"unit":"un.","itemId":null},{"ref":"STANDOFF M3 x 8 M-F","nome":"STANDOFF M3 x 8 M-F","qty":2.0,"unit":"un.","itemId":null},{"ref":"STANDOFF M3 x 12 M-F","nome":"STANDOFF M3 x 12 M-F","qty":2.0,"unit":"un.","itemId":null},{"ref":"DIN 912 M4x8","nome":"BOLT ISO DIN 912 M4x8","qty":17.0,"unit":"un.","itemId":null},{"ref":"ISO 10642 - M4 x 16","nome":"BOLT ISO 10642 - M4 x 16","qty":20.0,"unit":"un.","itemId":null},{"ref":"ISO 7380 M4 x 10","nome":"BOLT ISO 7380 M4 x 10","qty":4.0,"unit":"un.","itemId":null},{"ref":"ISO 14585 - ST3.5 x 9.5","nome":"BOLT ISO 14585 - ST3.5 x 9.5","qty":2.0,"unit":"un.","itemId":null},{"ref":"DIN 912 M3 x 16","nome":"BOLT DIN 912 M3 x 16","qty":2.0,"unit":"un.","itemId":null},{"ref":"4mm Magnets","nome":"4mm x 4mm","qty":1.0,"unit":"un.","itemId":null},{"ref":"8mm Magnet","nome":"8mm x 5mm ","qty":7.0,"unit":"un.","itemId":null},{"ref":"PY7015-70*70*15","nome":"FAN","qty":1.0,"unit":"un.","itemId":null},{"ref":"CHARGER","nome":"SPC-1300Wh-890200 RS485 Dual Output","qty":1.0,"unit":"un.","itemId":null},{"ref":"SPRINGS_ANTI-LOCK","nome":"Mola de Compressão C.12,98xDe.11xd.0,80xp.5,728","qty":2.0,"unit":"un.","itemId":null},{"ref":"SLT-D-PLS-001","nome":"SPRING BUSHING","qty":2.0,"unit":"un.","itemId":null},{"ref":"SLT-D-PLS-002","nome":"SPRING ROD SPACER","qty":2.0,"unit":"un.","itemId":null},{"ref":"SLT-D-PLS-003","nome":"FRONT DOOR","qty":1.0,"unit":"un.","itemId":null},{"ref":"SLT-D-PLS-004","nome":"LATERAL SLIDER","qty":2.0,"unit":"un.","itemId":null},{"ref":"SLT-D-PLS-005","nome":"BOTTOM SLIDER","qty":2.0,"unit":"un.","itemId":null},{"ref":"SLT-D-PLS-014","nome":"STATION LED RING","qty":1.0,"unit":"un.","itemId":null},{"ref":"SLT-D-PLS-030","nome":"INSIDE SLOT RING","qty":1.0,"unit":"un.","itemId":null},{"ref":"SLT-D-PLS-031","nome":"DOOR MAGNET HOLDER","qty":1.0,"unit":"un.","itemId":null},{"ref":"SLT-D-PLS-029","nome":"MOTHERBOARD COVER","qty":1.0,"unit":"un.","itemId":null},{"ref":"SLT-D-PLS-032","nome":"FRONT TOP COVER","qty":1.0,"unit":"un.","itemId":null},{"ref":"SLT-D-PLS-033","nome":"REAR TOP COVER","qty":1.0,"unit":"un.","itemId":null},{"ref":"SLT-D-PLS-011","nome":"FRONT NFC WALL","qty":1.0,"unit":"un.","itemId":null},{"ref":"SLT-D-PLS-012","nome":"REAR NFC WALL","qty":1.0,"unit":"un.","itemId":null},{"ref":"SLT-D-PLS-013","nome":"STATION INSIDE RING","qty":1.0,"unit":"un.","itemId":null},{"ref":"SLT-D-PLS-022","nome":"DOOR BUSHING","qty":2.0,"unit":"un.","itemId":null},{"ref":"DIN 912 - M3 x 8","nome":"BOLT - DIN 912 - M3 x 8","qty":4.0,"unit":"un.","itemId":null},{"ref":"DIN 985 M4","nome":"NUT DIN 985 M4","qty":4.0,"unit":"un.","itemId":null},{"ref":"MAGNET Ø20x4","nome":"MAGNET Ø20x4","qty":2.0,"unit":"un.","itemId":null},{"ref":"ISO 14585 - ST2.9 x 9.5","nome":"BOLT - ISO 14585 - ST2.9 x 9.5","qty":4.0,"unit":"un.","itemId":null},{"ref":"ISO 14585 - ST3.5 x 13","nome":"BOLT - ISO 14585 - ST3.5 x 13","qty":6.0,"unit":"un.","itemId":null},{"ref":"DIN 912 M4 x 12","nome":"DIN 912 M4 x 12","qty":4.0,"unit":"un.","itemId":null},{"ref":"PIN LOCK","nome":"MT171 - 12mm | Usable lenght = 40mm","qty":1.0,"unit":"un.","itemId":null},{"ref":"SERVO - MG996R","nome":"SERVO MOTOR","qty":1.0,"unit":"un.","itemId":null},{"ref":"Servo Motor Horn","nome":"Servo Hub para Servo 25T em alumínio Ø20mm","qty":1.0,"unit":"un.","itemId":null},{"ref":"SLT-D-PLS-024","nome":"LOCK MECH TOP COVER","qty":1.0,"unit":"un.","itemId":null},{"ref":"SLT-D-PLS-023","nome":"LOCK MECH BODY","qty":1.0,"unit":"un.","itemId":"lock-mech-body"},{"ref":"SLT-D-PLS-025","nome":"LOCK MECH RACK","qty":1.0,"unit":"un.","itemId":null},{"ref":"SLT-D-PLS-026","nome":"LOCK MECH PINION","qty":1.0,"unit":"un.","itemId":null},{"ref":"SLT-D-PLS-027","nome":"LOCH MECH PIN LOCK RING","qty":1.0,"unit":"un.","itemId":null},{"ref":"SLT-D-PLS-028","nome":"PIN LOCK SPACER","qty":1.0,"unit":"un.","itemId":null},{"ref":"SOLENOID 12V DC LOCK","nome":"12V DC LOCK","qty":1.0,"unit":"un.","itemId":null},{"ref":"SOLENOID LOCK CABLE","nome":"JST XH 2 Pin conector","qty":1.0,"unit":"un.","itemId":null},{"ref":"SPRINGS_UNLOCK","nome":"SPRING LOCK SYSTEM","qty":1.0,"unit":"un.","itemId":null},{"ref":"Slot_SB","nome":"PCB BREAKOUT","qty":1.0,"unit":"un.","itemId":null},{"ref":"Slot_Motherboard","nome":"PCB MOTHERBOARD","qty":1.0,"unit":"un.","itemId":null},{"ref":"Slot_RFID","nome":"RFID PCB","qty":1.0,"unit":"un.","itemId":"rfid-pcb"},{"ref":"Slot_LED","nome":"SLOT LED PCB","qty":1.0,"unit":"un.","itemId":null},{"ref":"Slot_Antenna","nome":"PCB ANTENNA","qty":1.0,"unit":"un.","itemId":"dune-slot-antenna-pcb"},{"ref":"SLOT_MAINS","nome":"From PCB Breakout to PCB Motherboard","qty":1.0,"unit":"un.","itemId":null},{"ref":"CAN_SLOT","nome":"From PCB Breakout to PCB Motherboard","qty":1.0,"unit":"un.","itemId":null},{"ref":"V_CHG","nome":"From PCB Motherboard to Charger","qty":1.0,"unit":"un.","itemId":null},{"ref":"RS485","nome":"From PCB Motherboard to Charger","qty":1.0,"unit":"un.","itemId":null},{"ref":"V_LED","nome":"From PCB Motherboard to Slot LED PCB","qty":1.0,"unit":"un.","itemId":null},{"ref":"NTC","nome":"From PCB Motherboard to NTC","qty":1.0,"unit":"un.","itemId":null},{"ref":"RF_ANT","nome":"From PCB Motherboard to PCB Antenna","qty":1.0,"unit":"un.","itemId":null},{"ref":"V_DC","nome":"From Charger to PCB Antenna","qty":1.0,"unit":"un.","itemId":null}]};
 
 const norm = s => (s || '').toString()
   .normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
@@ -712,9 +830,6 @@ function renderStats(){
   const todayStr = new Date().toDateString();
   const todayCount = movements.filter(m => new Date(m.created_at).toDateString() === todayStr).length;
   document.getElementById('stat-moves').textContent = todayCount;
-  let low = 0;
-  items.forEach((it, id) => { const s = computeStock(id); if (s !== null && s <= 0) low++; });
-  document.getElementById('stat-low').textContent = low;
 }
 
 function renderList(){
@@ -1049,6 +1164,65 @@ document.getElementById('btn-new-item').addEventListener('click', () => {
 
 document.getElementById('search').addEventListener('input', renderList);
 
+let activeView = 'movimentos';
+let activeBom = 'station';
+
+function switchView(view){
+  activeView = view;
+  document.getElementById('view-movimentos').style.display = view === 'movimentos' ? '' : 'none';
+  document.getElementById('view-boms').style.display = view === 'boms' ? '' : 'none';
+  document.getElementById('tab-movimentos').classList.toggle('active', view === 'movimentos');
+  document.getElementById('tab-boms').classList.toggle('active', view === 'boms');
+  if (view === 'boms') renderBom();
+}
+
+document.getElementById('tab-movimentos').addEventListener('click', () => switchView('movimentos'));
+document.getElementById('tab-boms').addEventListener('click', () => switchView('boms'));
+
+function switchBom(name){
+  activeBom = name;
+  document.getElementById('bom-tab-station').classList.toggle('active', name === 'station');
+  document.getElementById('bom-tab-slot').classList.toggle('active', name === 'slot');
+  renderBom();
+}
+
+document.getElementById('bom-tab-station').addEventListener('click', () => switchBom('station'));
+document.getElementById('bom-tab-slot').addEventListener('click', () => switchBom('slot'));
+
+function renderBom(){
+  const lines = BOM_DATA[activeBom] || [];
+  const tracked = lines.filter(l => l.itemId);
+
+  document.getElementById('bom-summary').innerHTML = `
+    <div class="bom-summary">
+      <div class="bs"><span class="n num">${lines.length}</span><span class="l">Linhas na BOM</span></div>
+      <div class="bs"><span class="n num">${tracked.length}</span><span class="l">Rastreadas no inventário</span></div>
+    </div>
+  `;
+
+  const body = document.getElementById('bom-body');
+  body.innerHTML = lines.map(l => {
+    if (!l.itemId){
+      return `<tr>
+        <td class="bom-ref">${escapeHtml(l.ref || '—')}</td>
+        <td>${escapeHtml(l.nome)}</td>
+        <td class="bom-qty">${fmtQty(l.qty)}${l.unit ? ' ' + escapeHtml(l.unit) : ''}</td>
+        <td class="bom-stock zero">0</td>
+      </tr>`;
+    }
+    const it = items.get(l.itemId);
+    const stock = computeStock(l.itemId);
+    const stockText = stock === null ? 'por confirmar' : fmtQty(stock, it ? it.unit : null);
+    const cls = stock !== null && stock <= 0 ? 'zero' : (stock === null ? 'na' : '');
+    return `<tr>
+      <td class="bom-ref">${escapeHtml(l.ref || '—')}</td>
+      <td title="Inventário: ${escapeHtml(it ? it.nome : l.itemId)}">${escapeHtml(l.nome)}</td>
+      <td class="bom-qty">${fmtQty(l.qty)}${l.unit ? ' ' + escapeHtml(l.unit) : ''}</td>
+      <td class="bom-stock ${cls}">${stockText}</td>
+    </tr>`;
+  }).join('');
+}
+
 function showBanner(text, tone){
   const el = document.getElementById('status-banner');
   el.textContent = text;
@@ -1065,6 +1239,7 @@ function renderAll(){
   renderList();
   renderSelected();
   renderHistory();
+  if (activeView === 'boms') renderBom();
 }
 
 async function loadItems(){
