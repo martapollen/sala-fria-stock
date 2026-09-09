@@ -712,6 +712,10 @@
       </div>
       <div class="panel-body">
         <div id="bom-summary"></div>
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+          <input type="text" id="bom-search" placeholder="Pesquisar por nome ou referência…" autocomplete="off">
+        </div>
         <div class="table-scroll">
           <table class="bom-table" id="bom-table">
             <thead>
@@ -1188,6 +1192,7 @@ function switchBom(name){
 
 document.getElementById('bom-tab-station').addEventListener('click', () => switchBom('station'));
 document.getElementById('bom-tab-slot').addEventListener('click', () => switchBom('slot'));
+document.getElementById('bom-search').addEventListener('input', renderBom);
 
 function renderBom(){
   const lines = BOM_DATA[activeBom] || [];
@@ -1200,8 +1205,15 @@ function renderBom(){
     </div>
   `;
 
+  const q = norm(document.getElementById('bom-search').value);
+  const filtered = q ? lines.filter(l => norm([l.ref, l.nome].join(' ')).includes(q)) : lines;
+
   const body = document.getElementById('bom-body');
-  body.innerHTML = lines.map(l => {
+  if (filtered.length === 0){
+    body.innerHTML = `<tr><td colspan="4" class="empty-hint">Nenhuma linha encontrada.</td></tr>`;
+    return;
+  }
+  body.innerHTML = filtered.map(l => {
     if (!l.itemId){
       return `<tr>
         <td class="bom-ref">${escapeHtml(l.ref || '—')}</td>
