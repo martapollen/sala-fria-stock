@@ -114,7 +114,51 @@ begin
   ) then
     execute 'alter publication supabase_realtime add table public.movements';
   end if;
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'lead_times'
+  ) then
+    execute 'alter publication supabase_realtime add table public.lead_times';
+  end if;
 end $$;
+
+-- ────────────────────────────────────────────────────────────────
+-- 3b. Lead times — tab "Suppliers". Uma linha por componente de BOM
+--     (identificado pelo "id" estável gerado para cada linha do
+--     BOM_DATA no index.html), com o lead time em dias. Público para
+--     ler e escrever, tal como o resto da app por agora — quando a
+--     Marta quiser bloquear a edição a outros users, isto é o sítio
+--     a restringir (ex. para "to authenticated").
+-- ────────────────────────────────────────────────────────────────
+
+create table if not exists lead_times (
+  bom_line_id     text primary key,
+  lead_time_days  numeric,
+  updated_at      timestamptz not null default now()
+);
+
+alter table lead_times enable row level security;
+
+drop policy if exists "lead times are publicly readable" on lead_times;
+create policy "lead times are publicly readable"
+  on lead_times for select
+  using (true);
+
+drop policy if exists "anyone can set a lead time" on lead_times;
+create policy "anyone can set a lead time"
+  on lead_times for insert
+  with check (true);
+
+drop policy if exists "anyone can update a lead time" on lead_times;
+create policy "anyone can update a lead time"
+  on lead_times for update
+  using (true)
+  with check (true);
+
+drop policy if exists "anyone can clear a lead time" on lead_times;
+create policy "anyone can clear a lead time"
+  on lead_times for delete
+  using (true);
 
 -- ────────────────────────────────────────────────────────────────
 -- 5. Catálogo de componentes (134 itens, com as 7 quantidades
