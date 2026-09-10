@@ -125,10 +125,12 @@ end $$;
 -- ────────────────────────────────────────────────────────────────
 -- 3b. Lead times — tab "Suppliers". Uma linha por componente de BOM
 --     (identificado pelo "id" estável gerado para cada linha do
---     BOM_DATA no index.html), com o lead time em dias. Público para
---     ler e escrever, tal como o resto da app por agora — quando a
---     Marta quiser bloquear a edição a outros users, isto é o sítio
---     a restringir (ex. para "to authenticated").
+--     BOM_DATA no index.html), com o lead time em dias.
+--     A Marta preencheu os valores e pediu para bloquear a edição a
+--     partir da app — por isso só há policy de leitura pública.
+--     Qualquer alteração futura aos valores é feita diretamente aqui
+--     no SQL Editor (ex.: update lead_times set lead_time_days = ...
+--     where bom_line_id = '...';).
 -- ────────────────────────────────────────────────────────────────
 
 create table if not exists lead_times (
@@ -145,20 +147,8 @@ create policy "lead times are publicly readable"
   using (true);
 
 drop policy if exists "anyone can set a lead time" on lead_times;
-create policy "anyone can set a lead time"
-  on lead_times for insert
-  with check (true);
-
 drop policy if exists "anyone can update a lead time" on lead_times;
-create policy "anyone can update a lead time"
-  on lead_times for update
-  using (true)
-  with check (true);
-
 drop policy if exists "anyone can clear a lead time" on lead_times;
-create policy "anyone can clear a lead time"
-  on lead_times for delete
-  using (true);
 
 -- ────────────────────────────────────────────────────────────────
 -- 5. Catálogo de componentes (134 itens, com as 7 quantidades
