@@ -1495,7 +1495,7 @@ function groupBySupplier(lines){
 }
 
 function renderSuppliers(){
-  const lines = allBomLines();
+  const lines = allBomLines().filter(l => norm(l.supplier) !== 'external');
   let groups = groupBySupplier(lines);
 
   document.getElementById('suppliers-summary').innerHTML = `
