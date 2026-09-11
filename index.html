@@ -531,6 +531,7 @@
   .person{ font-weight:500; }
   .ts{ color:var(--text-muted); white-space:nowrap; }
   .comp-cell .n{ font-weight:500; }
+  .note-icon{ font-size:11px; cursor:help; }
   .comp-cell .c{ font-size:11px; color:var(--text-muted); }
 
   .history-filter{
@@ -1127,6 +1128,10 @@ function renderSelected(){
           <input type="number" id="f-qty" min="0" step="any" placeholder="0" inputmode="decimal">
         </div>
       </div>
+      <div class="field">
+        <label for="f-notes">Notas (opcional)</label>
+        <input type="text" id="f-notes" placeholder="ex. usado no protótipo X" autocomplete="off">
+      </div>
       <button class="primary" id="btn-submit" disabled>Registar movimento</button>
       <div class="result-preview" id="result-preview"></div>
     </div>
@@ -1137,6 +1142,7 @@ function renderSelected(){
 
   const personEl = document.getElementById('f-person');
   const qtyEl = document.getElementById('f-qty');
+  const notesEl = document.getElementById('f-notes');
   const submitBtn = document.getElementById('btn-submit');
   const preview = document.getElementById('result-preview');
 
@@ -1186,6 +1192,7 @@ function renderSelected(){
     submitBtn.disabled = true;
     submitBtn.textContent = 'A registar…';
     const delta = direction === 'in' ? qty : -qty;
+    const notes = notesEl.value.trim();
     const { error } = await sb.from('movements').insert({
       item_id: it.id,
       nome: it.nome,
@@ -1196,6 +1203,7 @@ function renderSelected(){
       qty,
       direction,
       delta,
+      notes: notes || null,
     });
     if (error){
       submitBtn.textContent = 'Erro — tenta novamente';
@@ -1341,7 +1349,7 @@ function renderHistory(){
       <td class="ts mono">${fmtTs(m.created_at)}</td>
       <td class="person">${escapeHtml(m.person)}</td>
       <td class="comp-cell">
-        <div class="n">${escapeHtml(m.nome)}</div>
+        <div class="n">${escapeHtml(m.nome)}${m.notes ? ` <span class="note-icon" title="${escapeHtml(m.notes)}">📝</span>` : ''}</div>
         <div class="c mono">${escapeHtml(m.categoria || '')}</div>
       </td>
       <td style="text-align:right;" class="delta num ${cls}">${sign}${fmtQty(delta)}</td>

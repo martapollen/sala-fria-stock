@@ -32,8 +32,11 @@ create table if not exists movements (
   qty         numeric not null,     -- quantidade movimentada (sempre positiva)
   direction   text not null check (direction in ('in', 'out')),
   delta       numeric not null,     -- +qty (entrada) ou -qty (saída)
+  notes       text,                 -- nota livre opcional escrita por quem regista o movimento
   created_at  timestamptz not null default now()
 );
+
+alter table movements add column if not exists notes text;
 
 create index if not exists movements_item_id_idx on movements (item_id);
 create index if not exists movements_created_at_idx on movements (created_at desc);
