@@ -713,7 +713,8 @@
 
   .planner-inputs{ display:flex; flex-wrap:wrap; gap:12px 16px; margin-bottom:6px; }
   .planner-inputs .field{ flex:1 1 150px; max-width:220px; margin-bottom:0; }
-  .planner-options{ display:flex; flex-wrap:wrap; gap:6px 22px; margin:10px 0 14px; }
+  .planner-options{ display:flex; flex-wrap:wrap; align-items:center; gap:8px 22px; margin:10px 0 14px; }
+  .planner-actions{ display:flex; gap:8px; margin-left:auto; }
   .planner-options label.chk{
     display:flex; align-items:center; gap:7px; margin:0;
     text-transform:none; letter-spacing:0; font-size:13px; color:var(--text); cursor:pointer;
@@ -1003,6 +1004,10 @@
         <div class="planner-options">
           <label class="chk"><input type="checkbox" id="plan-only-missing"> Só o que falta comprar</label>
           <label class="chk"><input type="checkbox" id="plan-by-supplier"> Agrupar por fornecedor</label>
+          <span class="planner-actions">
+            <button type="button" class="pill-btn" id="plan-csv">Descarregar CSV</button>
+            <button type="button" class="pill-btn" id="plan-copy">Copiar para Sheets</button>
+          </span>
         </div>
         <div id="planner-summary"></div>
         <div class="table-scroll">
@@ -1758,6 +1763,7 @@ function renderPlanner(){
   const body = document.getElementById('planner-body');
 
   if (rowsAll.length === 0){
+    plannerExport = [];
     sumEl.innerHTML = '';
     body.innerHTML = '<tr><td colspan="6" class="empty-hint">Indica quantas electrical areas, estações ou slots queres produzir.</td></tr>';
     return;
@@ -1772,13 +1778,14 @@ function renderPlanner(){
   sumEl.innerHTML = `
     <div class="bom-summary">
       <div class="bs"><span class="n num">${rowsAll.length}</span><span class="l">Componentes</span></div>
-      <div class="bs"><span class="n num">${okN}</span><span class="l">Com stock suficiente</span></div>
+      <div class="bs"><span class="n num">${okN}</span><span class="l">Stock suficiente</span></div>
       <div class="bs"><span class="n num">${shortN}</span><span class="l">Falta stock</span></div>
-      ${maxLt !== null ? `<div class="bs"><span class="n num">${fmtQty(maxLt)} d</span><span class="l">Maior lead time a comprar</span></div>` : ''}
+      ${maxLt !== null ? `<div class="bs"><span class="n num">${fmtQty(maxLt)} d</span><span class="l">Maior lead time</span></div>` : ''}
     </div>`;
 
   let rows = onlyMissing ? rowsAll.filter(r => r.status !== 'ok') : rowsAll.slice();
   if (rows.length === 0){
+    plannerExport = [];
     body.innerHTML = '<tr><td colspan="6" class="empty-hint">Tudo o que precisas está em stock.</td></tr>';
     return;
   }
@@ -1804,6 +1811,7 @@ function renderPlanner(){
   };
 
   if (!bySupplier){
+    plannerExport = rows;
     body.innerHTML = rows.map(rowHtml).join('');
     return;
   }
@@ -1813,11 +1821,64 @@ function renderPlanner(){
     if (!groups.has(k)) groups.set(k, []);
     groups.get(k).push(r);
   });
-  body.innerHTML = Array.from(groups.keys()).sort((a, b) => a.localeCompare(b)).map(k =>
+  const keys = Array.from(groups.keys()).sort((a, b) => a.localeCompare(b));
+  plannerExport = keys.flatMap(k => groups.get(k));
+  body.innerHTML = keys.map(k =>
     `<tr class="pl-sup-row"><td colspan="6">${escapeHtml(k)} · ${groups.get(k).length} linha${groups.get(k).length === 1 ? '' : 's'}</td></tr>` +
     groups.get(k).map(rowHtml).join('')
   ).join('');
 }
+
+let plannerExport = [];
+
+function plannerTable(){
+  const num = n => (Math.round(n * 100) / 100).toString().replace('.', ',');
+  const header = ['Componente', 'REF', 'BOM', 'Área', 'Necessário', 'Unidade', 'Em stock', 'A comprar', 'Fornecedor', 'Lead time (dias)', 'Link'];
+  const lines = plannerExport.map(r => {
+    const l = r.l;
+    const lt = leadTimes.get(l.id);
+    return [
+      l.nome, l.ref || '', BOM_LABEL[r.bom], l.group || '',
+      num(r.need), l.unit || '',
+      r.status === 'untracked' ? '' : (r.status === 'unknown' ? 'por confirmar' : num(r.stock)),
+      num(r.missing),
+      l.supplier || '',
+      lt && lt.lead_time_days != null ? num(Number(lt.lead_time_days)) : '',
+      l.link || '',
+    ];
+  });
+  return [header, ...lines];
+}
+
+function plannerFileLabel(){
+  const parts = [['EA', 'plan-ea'], ['ST', 'plan-st'], ['SL', 'plan-sl']]
+    .map(([k, id]) => planNum(id) > 0 ? planNum(id) + k : '').filter(Boolean);
+  return `planeamento-${parts.join('-')}-${new Date().toISOString().slice(0, 10)}`;
+}
+
+document.getElementById('plan-csv').addEventListener('click', () => {
+  if (!plannerExport.length) return;
+  const cell = v => /[;"\n\r]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+  const csv = '﻿' + plannerTable().map(row => row.map(cell).join(';')).join('\r\n');
+  const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  const a = document.createElement('a');
+  a.href = url; a.download = plannerFileLabel() + '.csv';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+});
+
+document.getElementById('plan-copy').addEventListener('click', async () => {
+  if (!plannerExport.length) return;
+  const btn = document.getElementById('plan-copy');
+  const tsv = plannerTable().map(row => row.map(v => v.replace(/[\t\r\n]+/g, ' ')).join('\t')).join('\n');
+  try {
+    await navigator.clipboard.writeText(tsv);
+    btn.textContent = 'Copiado';
+  } catch (e) {
+    btn.textContent = 'Não foi possível copiar';
+  }
+  setTimeout(() => { btn.textContent = 'Copiar para Sheets'; }, 1800);
+});
 
 function savePlannerInputs(){
   try {
