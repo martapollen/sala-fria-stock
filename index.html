@@ -1765,17 +1765,15 @@ function renderPlanner(){
 
   const okN = rowsAll.filter(r => r.status === 'ok').length;
   const shortN = rowsAll.filter(r => r.status === 'short').length;
-  const unkN = rowsAll.filter(r => r.status === 'untracked' || r.status === 'unknown').length;
   const lts = rowsAll.filter(r => r.status !== 'ok')
     .map(r => leadTimes.get(r.l.id)).filter(x => x && x.lead_time_days != null).map(x => Number(x.lead_time_days));
   const maxLt = lts.length ? Math.max(...lts) : null;
 
   sumEl.innerHTML = `
     <div class="bom-summary">
-      <div class="bs"><span class="n num">${rowsAll.length}</span><span class="l">Linhas no plano</span></div>
+      <div class="bs"><span class="n num">${rowsAll.length}</span><span class="l">Componentes</span></div>
       <div class="bs"><span class="n num">${okN}</span><span class="l">Com stock suficiente</span></div>
       <div class="bs"><span class="n num">${shortN}</span><span class="l">Falta stock</span></div>
-      <div class="bs"><span class="n num">${unkN}</span><span class="l">Sem stock registado</span></div>
       ${maxLt !== null ? `<div class="bs"><span class="n num">${fmtQty(maxLt)} d</span><span class="l">Maior lead time a comprar</span></div>` : ''}
     </div>`;
 
