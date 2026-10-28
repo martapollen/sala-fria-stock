@@ -1542,7 +1542,29 @@ document.getElementById('bom-search').addEventListener('input', renderBom);
 function lineItemIds(l){
   if (l.itemIds && l.itemIds.length) return l.itemIds;
   if (l.itemId) return [l.itemId];
-  return [];
+  return autoItemIds(l);
+}
+
+let autoLinkCache = { src: null, byRefName: new Map(), byName: new Map() };
+
+function buildAutoLinks(){
+  const byRefName = new Map(), byName = new Map();
+  const push = (m, k, id) => { if (!m.has(k)) m.set(k, []); m.get(k).push(id); };
+  for (const it of items.values()){
+    if (/\(v0\)/i.test(it.nome || '')) continue;
+    const n = norm(it.nome), r = norm(it.ref);
+    if (r){ push(byRefName, r + '||' + n, it.id); }
+    push(byName, n, it.id);
+  }
+  autoLinkCache = { src: items, byRefName, byName };
+}
+
+function autoItemIds(l){
+  if (autoLinkCache.src !== items) buildAutoLinks();
+  const n = norm(l.nome), r = norm(l.ref);
+  if (r) return autoLinkCache.byRefName.get(r + '||' + n) || autoLinkCache.byRefName.get(r + '||' + r) || [];
+  const c = autoLinkCache.byName.get(n) || [];
+  return c.length === 1 ? c : [];
 }
 
 function computeLineStock(l){
